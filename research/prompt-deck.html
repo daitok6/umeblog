@@ -1,0 +1,690 @@
+<meta charset="utf-8">
+<title>Umeblog プロンプト帖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Shippori+Mincho:wght@600&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+/* ══════════ TOKENS ══════════ */
+:root {
+  --paper:    #E9E9E4;
+  --surface:  #F7F7F4;
+  --sunken:   #DEDED8;
+  --ink:      #171614;
+  --ink-2:    #3A3835;
+  --muted:    #6A6763;
+  --faint:    #97948E;
+  --rule:     #CFCEC7;
+  --rule-2:   #B8B6AE;
+  --red:      #C92A16;
+  --red-wash: #F6E3DF;
+  --code-bg:  #191816;
+  --code-ink: #E6E3DD;
+  --code-rule:#33302C;
+
+  --f-disp: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+  --f-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+  --f-min:  "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:    #131211;
+    --surface:  #1C1B19;
+    --sunken:   #0C0B0A;
+    --ink:      #EAE8E3;
+    --ink-2:    #C9C6C0;
+    --muted:    #948F88;
+    --faint:    #6D6963;
+    --rule:     #2C2A27;
+    --rule-2:   #3B3835;
+    --red:      #F2634A;
+    --red-wash: #2A1613;
+    --code-bg:  #0A0908;
+    --code-ink: #E6E3DD;
+    --code-rule:#2C2A27;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:    #131211;
+  --surface:  #1C1B19;
+  --sunken:   #0C0B0A;
+  --ink:      #EAE8E3;
+  --ink-2:    #C9C6C0;
+  --muted:    #948F88;
+  --faint:    #6D6963;
+  --rule:     #2C2A27;
+  --rule-2:   #3B3835;
+  --red:      #F2634A;
+  --red-wash: #2A1613;
+  --code-bg:  #0A0908;
+  --code-ink: #E6E3DD;
+  --code-rule:#2C2A27;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.9;
+  letter-spacing: .02em;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "palt" 1;
+}
+h1,h2,h3,h4 { margin: 0; line-height: 1.4; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--red); text-underline-offset: .2em; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+.wrap { max-width: 60rem; margin: 0 auto; padding: 0 1.6rem 7rem; }
+
+/* ══════════ HERO ══════════ */
+.hero { padding: 4.5rem 0 2.5rem; border-bottom: 3px solid var(--ink); margin-bottom: 3.5rem; }
+.kicker {
+  font-family: var(--f-mono); font-size: .66rem; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--red); margin-bottom: 1.4rem;
+}
+.hero h1 {
+  font-family: var(--f-disp); font-weight: 900;
+  font-size: clamp(2.2rem, 7vw, 3.9rem);
+  letter-spacing: .01em; line-height: 1.18; margin-bottom: 1.4rem;
+}
+.hero .sub { max-width: 34rem; color: var(--ink-2); font-size: .95rem; }
+.hero .sub b { font-weight: 700; }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: .4rem 1.6rem; margin-top: 2.2rem;
+  font-family: var(--f-mono); font-size: .67rem; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--faint);
+}
+.hero-meta b { color: var(--ink-2); font-weight: 600; }
+
+/* ══════════ SECTION ══════════ */
+.sec { margin-bottom: 4.5rem; }
+.sec-head { display: flex; align-items: baseline; gap: .9rem; margin-bottom: 1.5rem; }
+.sec-bar { width: 1.6rem; height: .34rem; background: var(--red); flex: none; transform: translateY(-.25em); }
+.sec-head h2 { font-family: var(--f-disp); font-weight: 900; font-size: clamp(1.25rem,3.2vw,1.55rem); letter-spacing: .02em; }
+.sec-head h2 span {
+  display: block; font-family: var(--f-mono); font-size: .62rem; font-weight: 400;
+  letter-spacing: .17em; text-transform: uppercase; color: var(--faint); margin-top: .45rem;
+}
+.lede { max-width: 36rem; color: var(--ink-2); font-size: .93rem; margin-bottom: 1.8rem; }
+
+/* ══════════ REFERENCE TABLE ══════════ */
+.refs { display: grid; gap: .55rem; }
+.ref {
+  display: grid; grid-template-columns: 4.2rem 1fr; gap: 0;
+  background: var(--surface); border: 1px solid var(--rule); overflow: hidden;
+}
+.ref-chip { display: flex; flex-direction: column; }
+.ref-chip i { flex: 1; display: block; }
+.ref-meat { padding: .95rem 1.1rem 1.05rem; min-width: 0; }
+.ref-name {
+  font-family: var(--f-disp); font-weight: 700; font-size: .97rem; letter-spacing: .02em;
+  display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; line-height: 1.5;
+}
+.ref-name a { text-decoration: none; color: var(--ink); }
+.ref-name a:hover { color: var(--red); text-decoration: underline; }
+.ref-name em {
+  font-style: normal; font-family: var(--f-mono); font-size: .58rem; letter-spacing: .1em;
+  color: var(--faint); text-transform: lowercase;
+}
+.ref-read { font-size: .81rem; color: var(--muted); line-height: 1.85; margin-top: .4rem; }
+.ref-steal { margin-top: .6rem; padding-top: .6rem; border-top: 1px dashed var(--rule-2); font-size: .81rem; line-height: 1.8; color: var(--ink-2); }
+.ref-steal b {
+  font-family: var(--f-mono); font-size: .56rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--red); display: block; margin-bottom: .15rem; font-weight: 600;
+}
+
+/* ══════════ CALLOUT ══════════ */
+.callout {
+  border: 2px solid var(--red); background: var(--red-wash);
+  padding: 1.35rem 1.5rem; margin-top: 1.6rem;
+}
+.callout h3 { font-family: var(--f-disp); font-weight: 900; font-size: 1.02rem; color: var(--red); margin-bottom: .65rem; line-height: 1.55; }
+.callout p { font-size: .87rem; line-height: 1.9; color: var(--ink-2); }
+.callout p + p { margin-top: .6rem; }
+
+/* ══════════ PROMPT CARDS ══════════ */
+.card { border: 1px solid var(--rule); background: var(--surface); margin-bottom: 1.5rem; }
+.card-top { display: flex; gap: 1.1rem; padding: 1.25rem 1.35rem 1.1rem; align-items: flex-start; }
+.card-no {
+  font-family: var(--f-mono); font-weight: 600; font-size: 2.1rem; line-height: .95;
+  color: var(--red); font-variant-numeric: tabular-nums; flex: none; letter-spacing: -.04em;
+}
+.card-id { min-width: 0; flex: 1; }
+.card-name { font-family: var(--f-min); font-weight: 600; font-size: 1.32rem; letter-spacing: .05em; line-height: 1.45; }
+.card-name em { font-style: normal; font-family: var(--f-mono); font-size: .62rem; letter-spacing: .13em; text-transform: uppercase; color: var(--faint); display: block; margin-top: .3rem; }
+.card-lineage {
+  font-family: var(--f-mono); font-size: .63rem; letter-spacing: .06em; color: var(--muted);
+  margin-top: .7rem; line-height: 1.7;
+}
+.card-lineage b { color: var(--red); font-weight: 600; }
+.card-move { padding: 0 1.35rem 1.15rem; font-size: .86rem; line-height: 1.9; color: var(--ink-2); }
+.card-move b { font-weight: 700; }
+
+.swatch-row { display: flex; height: 1.5rem; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.swatch-row i { flex: 1; }
+
+/* prompt block */
+.pr-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .55rem .8rem .55rem 1.1rem; background: var(--sunken); border-bottom: 1px solid var(--rule);
+}
+.pr-label { font-family: var(--f-mono); font-size: .6rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
+.copy {
+  font-family: var(--f-mono); font-size: .64rem; letter-spacing: .09em; text-transform: uppercase;
+  padding: .34rem .8rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+  cursor: pointer; border-radius: 0; transition: opacity .15s; font-weight: 600; white-space: nowrap;
+}
+.copy:hover { opacity: .8; }
+.copy.ok { background: var(--red); border-color: var(--red); color: #fff; }
+pre.prompt {
+  margin: 0; padding: 1.25rem 1.35rem 1.4rem; background: var(--code-bg); color: var(--code-ink);
+  font-family: var(--f-mono); font-size: .755rem; line-height: 1.95; letter-spacing: 0;
+  white-space: pre-wrap; word-break: break-word; overflow-x: auto; max-height: 26rem; overflow-y: auto;
+  border-top: 1px solid var(--code-rule);
+}
+pre.prompt::-webkit-scrollbar { width: 10px; height: 10px; }
+pre.prompt::-webkit-scrollbar-thumb { background: #3A3733; }
+pre.prompt::-webkit-scrollbar-track { background: transparent; }
+
+/* ══════════ HOW TO USE ══════════ */
+.steps { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(13rem,1fr)); }
+.step { background: var(--surface); border: 1px solid var(--rule); border-top: 3px solid var(--red); padding: 1rem 1.1rem 1.1rem; }
+.step b { font-family: var(--f-mono); font-size: .6rem; letter-spacing: .14em; color: var(--red); display: block; margin-bottom: .45rem; }
+.step h4 { font-size: .89rem; font-weight: 700; margin-bottom: .4rem; line-height: 1.6; }
+.step p { font-size: .79rem; color: var(--muted); line-height: 1.85; }
+
+.foot { border-top: 3px solid var(--ink); margin-top: 3.5rem; padding-top: 2rem; }
+.foot h3 { font-family: var(--f-disp); font-weight: 900; font-size: 1.1rem; margin-bottom: .8rem; }
+.foot p { font-size: .87rem; color: var(--muted); max-width: 36rem; }
+.foot p + p { margin-top: .75rem; }
+
+@media (max-width: 620px) {
+  body { font-size: 15px; }
+  .wrap { padding-left: 1.05rem; padding-right: 1.05rem; }
+  .ref { grid-template-columns: 2.4rem 1fr; }
+  .card-top { flex-direction: column; gap: .5rem; }
+  pre.prompt { font-size: .72rem; max-height: 22rem; }
+}
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="kicker">Umeblog · Design Direction Prompts · v1</div>
+    <h1>参考サイト六つを<br>分解して、<br>プロンプトにした。</h1>
+    <p class="sub">あなたが送ってくれた6サイトを実際に開いて、色・組版・レイアウト・仕掛けを分解しました。そこから<b>5本のプロンプト</b>を作ってあります。そのままコピーして Claude に貼れば、デザイン案が出てきます。</p>
+    <div class="hero-meta">
+      <span><b>6</b> references, dissected</span>
+      <span><b>5</b> copy-paste prompts</span>
+      <span>incl. <b>the admin screen</b></span>
+    </div>
+  </header>
+
+  <!-- ══════════ REFERENCES ══════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <span class="sec-bar"></span>
+      <h2>分解<span>What each reference is actually doing</span></h2>
+    </div>
+    <p class="lede">kasoudesign のリンクは掲載ページだったので、紹介されている実サイトまで辿って見ています。左の色帯は各サイトの実際の配色です。</p>
+
+    <div class="refs">
+
+      <div class="ref">
+        <div class="ref-chip"><i style="background:#F2E8D5"></i><i style="background:#E01B1B"></i><i style="background:#F2C230"></i><i style="background:#2E6E7E"></i></div>
+        <div class="ref-meat">
+          <div class="ref-name"><a href="https://100th.nittoh-tea.com/" target="_blank" rel="noopener">日東紅茶 100 PICNIC</a><em>100th.nittoh-tea.com</em></div>
+          <p class="ref-read">昭和ポスターの熱量。クリーム地に一色の赤、上端に流れるマーキー、左に固定されたサイドバー、角丸ゼロ・溝ゼロで突き合わせたカード群。カードごとに地色が違う。</p>
+          <p class="ref-steal"><b>盗む</b>記事ごとの<b>巨大な通し番号</b>（06・05・04）と、ヘッダーの <b>06/100</b> という進捗表示。「積み上がっていく作品集」であって、流れていくフィードではない。前回の継続の話に、そのまま効きます。</p>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="ref-chip"><i style="background:#FFFFFF"></i><i style="background:#141414"></i><i style="background:#E8334A"></i><i style="background:#7C7A52"></i></div>
+        <div class="ref-meat">
+          <div class="ref-name"><a href="https://barfout.jp/" target="_blank" rel="noopener">BARFOUT!</a><em>barfout.jp</em></div>
+          <p class="ref-read">紙の雑誌をそのままWebに置いた設計。極太のディドネ系セリフの題字が画面の主役で、その上下はほぼ余白。ナビは小さく大きく字間を空けた欧文のみ。</p>
+          <p class="ref-steal"><b>盗む</b>題字を<b>雑誌の題字として扱う</b>覚悟。そして写真パネルを<b>ずらして重ねる</b>コラージュ組み。写真の多いブログに一番効く構図です。</p>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="ref-chip"><i style="background:#F2F2F0"></i><i style="background:#E8E8E6"></i><i style="background:#121212"></i><i style="background:#9A9A98"></i></div>
+        <div class="ref-meat">
+          <div class="ref-name"><a href="https://mud.co.jp/" target="_blank" rel="noopener">mud Inc.</a><em>mud.co.jp</em></div>
+          <p class="ref-read">ほぼ無彩色。画面の内側に一本の細い枠を引いて、額装したように見せている。等高線のような線がゆっくり動き続け、それだけが個性を担っている。</p>
+          <p class="ref-steal"><b>盗む</b><b>内側の細枠（額装）</b>は実装数行で品が出る、費用対効果が異常に高い手。それと<b>生成モチーフを一つだけ持つ</b>という考え方。これは投稿数に応じて育つ絵にできます。</p>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="ref-chip"><i style="background:#1BA8E8"></i><i style="background:#0A7CC4"></i><i style="background:#F07A5A"></i><i style="background:#E8E2D4"></i></div>
+        <div class="ref-meat">
+          <div class="ref-name"><a href="https://umi.design/" target="_blank" rel="noopener">umi.design</a><em>umi.design</em></div>
+          <p class="ref-read">画面いっぱいのフラットイラストが一枚。海沿いの遊歩道、白いワンピースの人、灯台、自転車。ロゴが波の形そのものとしてイラストに溶け込んでいる。全面に粒子のテクスチャ。</p>
+          <p class="ref-steal"><b>盗む</b>六つの中で<b>一番あたたかい</b>。イラスト一枚を主役にする勇気。しかもこれは<b>七十二候で絵を差し替える</b>仕掛けにできて、前回話した「書くことがない日」の対策と直結します。</p>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="ref-chip"><i style="background:#4CC8C0"></i><i style="background:#F2C230"></i><i style="background:#E8447A"></i><i style="background:#7B4FC4"></i></div>
+        <div class="ref-meat">
+          <div class="ref-name"><a href="https://ugokko.jp/" target="_blank" rel="noopener">UGOKKO</a><em>ugokko.jp</em></div>
+          <p class="ref-read">こども向け。極太の丸ゴシックが画面外まではみ出し、写真は切り抜き、ぬいぐるみのキャラクターが散らばる。右端に縦書きのタブが貼り付いている。</p>
+          <p class="ref-steal"><b>盗む</b><b>右端の縦書きタブ</b>は日本のUIらしい解で、「今日の一枚を書く」の常時ボタンに最適。あとは<b>キャラクター</b>。継続の仕掛けを持たせるなら、Duolingoのフクロウに当たる役が要ります。</p>
+        </div>
+      </div>
+
+      <div class="ref">
+        <div class="ref-chip"><i style="background:#E8E8E8"></i><i style="background:#161616"></i><i style="background:#E85428"></i><i style="background:#F2E06A"></i></div>
+        <div class="ref-meat">
+          <div class="ref-name"><a href="https://www.melius.com/" target="_blank" rel="noopener">Melius</a><em>melius.com</em></div>
+          <p class="ref-read">唯一ブログではなくSaaSのLP。ドット方眼の地、上部に告知バー＋黒の固定ナビ。中央の消失点に向かって画像が奥へ扇状に並ぶ。</p>
+          <p class="ref-steal"><b>盗む</b><b>遠近で奥に流れる画像の扇</b>。これを過去記事のアーカイブ表示にすると、写真が多いほど気持ちよくなる。あとディドネ系セリフ＋無個性サンセリフの組み合わせ。</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="callout">
+      <h3>参考の傾向について、一つ気づいたこと</h3>
+      <p>六つとも<b>太くて・大きくて・色が強い</b>方向です。前回の企画書で出した三案のうち、あなたが今回集めてきたものに一番近いのは <b>C（縦書きzine）</b>で、一番遠いのが <b>A（静謐）</b>でした。</p>
+      <p>これは有力な手がかりなので、下のプロンプトはその傾向に寄せてあります。ただし<b>読むのは彼女</b>なので、最終的な好みは本人に確認してください。あなたの好みと彼女の好みがずれている可能性は普通にあります。</p>
+    </div>
+  </section>
+
+  <!-- ══════════ HOW TO USE ══════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <span class="sec-bar"></span>
+      <h2>使い方<span>How to run these</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <b>01</b>
+        <h4>そのまま貼る</h4>
+        <p>プロンプトは全部入りで書いてあります。要約したり削ったりせず、丸ごと貼ってください。日本語組版の制約が効かなくなります。</p>
+      </div>
+      <div class="step">
+        <b>02</b>
+        <h4>1〜4を全部回す</h4>
+        <p>一本ずつ別々に投げて、四つ出揃ってから並べて選ぶ。一本目で決めないこと。比較しないと good か普通かが分かりません。</p>
+      </div>
+      <div class="step">
+        <b>03</b>
+        <h4>05は最後に</h4>
+        <p>05は管理画面用です。1〜4のどれを選んだかが決まってから、冒頭の一行だけ差し替えて投げてください。</p>
+      </div>
+      <div class="step">
+        <b>04</b>
+        <h4>彼女に見せる</h4>
+        <p>出てきた画面を並べて本人に選んでもらう。説明はせず、黙って見せるのが一番正確です。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ PROMPTS ══════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <span class="sec-bar"></span>
+      <h2>プロンプト<span>Five prompts, copy-paste ready</span></h2>
+    </div>
+
+    <!-- ───── 01 ───── -->
+    <article class="card">
+      <div class="card-top">
+        <div class="card-no">01</div>
+        <div class="card-id">
+          <div class="card-name">番号日記<em>The Numbered Journal</em></div>
+          <div class="card-lineage">系譜 — <b>日東紅茶 100 PICNIC</b> 主軸 ＋ <b>mud</b> の番号付け</div>
+        </div>
+      </div>
+      <div class="card-move">記事に<b>通し番号</b>を振って、積み上がる作品集として見せる案。流れて消えるフィードにしない。継続の仕掛けをデザインそのものに埋め込む、一番ふさわしい方向です。</div>
+      <div class="swatch-row"><i style="background:#EDE7DA"></i><i style="background:#D6301C"></i><i style="background:#2E5E4E"></i><i style="background:#F2C230"></i><i style="background:#7FB2C4"></i><i style="background:#1A1613"></i></div>
+      <div class="pr-bar"><span class="pr-label">Prompt 01</span><button class="copy" type="button">Copy</button></div>
+      <pre class="prompt">日本語の個人ブログをデザインしてください。書き手は日本人の女性で、日々のこと・ごはん・散歩など、テーマを絞らず毎日書きます。文章と写真が中心です。
+
+【画面】次の2枚を作ってください。
+1. 記事一覧（トップページ）
+2. 記事詳細ページ
+
+【方向性】
+1970年代の日本のプロダクトポスターの熱量を、個人の日記に適用する。堂々として、グラフィックで、あたたかい。企業的でもミニマルでもない。
+
+【この案の核 — 必ず入れること】
+記事ごとに「通し番号」を振る。047番の記事なら、カード内に 180px 級の巨大な数字「047」をアクセント色で置く。これは流れていくフィードではなく、積み上がっていく作品集である、という思想を視覚化するもの。
+ヘッダーには「047 / 100」という進捗表示を置く（100本を目標にしている）。
+
+【配色】
+- 地色 #EDE7DA（温かみのある紙色）
+- 文字 #1A1613
+- アクセント #D6301C（強い赤 — 数字・タグ・罫線に使う）
+- 補助 #2E5E4E（深緑）
+- カードの地色は次を順番に使い回す: #7FB2C4 / #F2C230 / #E8825A
+
+【書体】
+Zen Kaku Gothic New。見出しと数字は 900、本文は 400。
+欧文の小ラベルは大文字・字間 0.18em。
+
+【レイアウト】
+- 左に固定サイドバー（240px）: ロゴ、ナビ（記事 / タグ / About）、進捗表示。スクロールしても動かない。
+- 右は全幅のカードグリッド 3列。溝（gap）なし、角丸なし。印刷物のようにカード同士を突き合わせる。
+- カード構成: 上部に色帯（帯の中にキャプション）→ 写真 → 下半分は生成りの地に、カテゴリのピル＋日付、見出し、右下に巨大な通し番号。
+- 画面最上部に赤地のマーキー（横に流れる帯）。最新記事のタイトルを流す。
+
+【日本語組版 — 必須】
+- 本文 line-height 1.9、letter-spacing 0.05em、一行あたり日本語35文字まで
+- font-style: italic は絶対に使わない（日本語に斜体は存在せず、ブラウザが不格好に合成する）。強調は太さか「」で行う
+- 見出しは 1.4 まで詰めてよいが、本文は必ず空ける
+
+【使う文言 — ロレムイプサムは使わず、これをそのまま使うこと】
+- サイト名: うめの日記
+- 記事タイトル: 「六月、雨の匂いについて」「週末に作ったスープ」「新しい器を買った日」「駅裏の古本屋」
+- カテゴリ: #日々 #ごはん #さんぽ
+- 本文: 朝はいつも同じ道を歩く。角のパン屋が開くのは七時ちょうどで、それより早く着いてしまった日は、川沿いのベンチに座っている。
+
+【やらないこと】
+大きな角丸、ドロップシャドウ、グラデーションのヒーロー、絵文字をアイコン代わりに使うこと、全部中央揃え。</pre>
+    </article>
+
+    <!-- ───── 02 ───── -->
+    <article class="card">
+      <div class="card-top">
+        <div class="card-no">02</div>
+        <div class="card-id">
+          <div class="card-name">月刊うめ<em>The Masthead</em></div>
+          <div class="card-lineage">系譜 — <b>BARFOUT!</b> 主軸 ＋ <b>Melius</b> の遠近ギャラリー</div>
+        </div>
+      </div>
+      <div class="card-move">ブログを<b>月刊誌</b>として扱う案。記事は「号」にまとまり、題字が画面の主役になる。写真が多いほど強くなる構成で、毎日ではなく<b>月のリズム</b>で続けたい人に向きます。</div>
+      <div class="swatch-row"><i style="background:#FBFBF9"></i><i style="background:#111111"></i><i style="background:#D8202F"></i><i style="background:#6E6B4A"></i><i style="background:#C9C6BD"></i><i style="background:#E8E6E0"></i></div>
+      <div class="pr-bar"><span class="pr-label">Prompt 02</span><button class="copy" type="button">Copy</button></div>
+      <pre class="prompt">日本語の個人ブログをデザインしてください。書き手は日本人の女性で、文章と写真を投稿します。これを「個人が出している月刊誌」として設計してください。
+
+【画面】次の2枚を作ってください。
+1. トップページ（題字＋最新号＋バックナンバー）
+2. 記事ページ（雑誌の見開きのような組み）
+
+【方向性】
+紙の雑誌をそのままWebに置く。上品で、静かで、余白が主役。カルチャー誌の佇まい。
+
+【この案の核 — 必ず入れること】
+1. 題字を「雑誌の題字」として扱う。画面幅の 60〜70% を占める巨大なディドネ系（高コントラストの明朝／セリフ）で組み、その上下は思い切って空ける。題字がヒーローそのもの。
+2. 記事を「号」にまとめる。2026年9月号、8月号…とバックナンバーが並ぶ。
+3. 写真パネルを「ずらして重ねる」。グリッドに揃えず、数ピクセル〜数十ピクセル単位で意図的にオフセットさせ、紙を並べたコラージュのように見せる。
+4. バックナンバーの一覧は、中央の消失点に向かって奥へ扇状に並ぶ遠近のギャラリーにする（CSS transform の perspective を使う）。
+
+【配色】
+- 地色 #FBFBF9
+- 文字 #111111
+- アクセント #D8202F（赤 — 「最新号」バッジと細い罫だけに使う。それ以外に使わない）
+- 補助 #6E6B4A（カーキ）
+- 罫線 #C9C6BD
+
+【書体】
+- 題字・大見出し: Shippori Mincho 600（高コントラストで雑誌的）
+- 本文・ナビ: Zen Kaku Gothic New 400 / 500
+- ナビは欧文のみ、大文字、字間 0.2em、10〜12px の小さいサイズ
+
+【レイアウト】
+- ナビは上端に小さく水平に。ロゴは置かない（題字が下にあるため）
+- 題字の周囲は上下に最低 15vh の余白
+- 記事ページは1段組み、本文幅は日本語35文字。写真は本文幅を超えて左右にはみ出してよい（フルブリード）
+- 写真の上に白文字で小さなキャプションを重ねる
+
+【日本語組版 — 必須】
+- 本文 line-height 1.95、letter-spacing 0.05em、一行あたり日本語35文字まで
+- font-style: italic は絶対に使わない。強調は太さか「」で
+- 明朝は見出しに、ゴシックは本文に、という役割分担を守る
+
+【使う文言 — ロレムイプサムは使わず、これをそのまま使うこと】
+- 題字: UME（サブに「うめ」）
+- 号: 2026年9月号 / 特集「あたらしい器」
+- 記事タイトル: 「六月、雨の匂いについて」「週末に作ったスープ」「駅裏の古本屋」
+- 本文: 朝はいつも同じ道を歩く。角のパン屋が開くのは七時ちょうどで、それより早く着いてしまった日は、川沿いのベンチに座って、水面が明るくなっていくのを眺めている。
+
+【やらないこと】
+カードUI、角丸、影、グラデーション、サイドバー、絵文字。雑誌に無いものは置かない。</pre>
+    </article>
+
+    <!-- ───── 03 ───── -->
+    <article class="card">
+      <div class="card-top">
+        <div class="card-no">03</div>
+        <div class="card-id">
+          <div class="card-name">七十二候<em>The Seasonal Scene</em></div>
+          <div class="card-lineage">系譜 — <b>umi.design</b> 主軸 ＋ <b>UGOKKO</b> の縦タブとキャラクター</div>
+        </div>
+      </div>
+      <div class="card-move">一枚のイラストが主役で、それが<b>五日ごとに変わる</b>案。七十二候（一年を72に割った古い暦）に合わせて絵と季語が入れ替わるので、「書くことがない日」の入口が自動で毎回用意されます。六案で一番あたたかい方向。</div>
+      <div class="swatch-row"><i style="background:#4A9FD8"></i><i style="background:#1C7BB8"></i><i style="background:#F2E8D8"></i><i style="background:#E8845C"></i><i style="background:#D8C86A"></i><i style="background:#2A3A42"></i></div>
+      <div class="pr-bar"><span class="pr-label">Prompt 03</span><button class="copy" type="button">Copy</button></div>
+      <pre class="prompt">日本語の個人ブログをデザインしてください。書き手は日本人の女性で、日々のことを文章と写真で綴ります。やわらかく、季節を感じる設計にしてください。
+
+【画面】次の2枚を作ってください。
+1. トップページ（季節のイラスト＋記事一覧）
+2. 記事ページ
+
+【この案の核 — 必ず入れること】
+1. トップの最上部を、画面いっぱいの「フラットベクターのイラスト一枚」にする。写真ではなくイラスト。奥行きのある風景（例: 秋の川べり、木、歩いている人、自転車）を、少ない色数の平面的な塗りで描く。全面に細かい粒子（グレイン）のテクスチャを薄く重ねる。
+2. このイラストは「七十二候」に連動して変わる、という設定にする。画面のどこかに現在の候を小さく明朝で表示する。例: 「白露 末候 ─ 玄鳥去（つばめさる）」。日付とセットで、イラストの隅に静かに置く。
+3. ロゴをイラストの一部として描く。独立したロゴを置くのではなく、風景の要素（水面の波、雲、木の枝など）がそのまま文字の形になっているようにする。
+4. 画面右端に、縦書きの細いタブを貼り付ける。「今日の一枚を書く」というボタンで、スクロールしても常に right:0 に固定される。日本のサイトでよく見る縦長のピル型タブの形にすること。
+
+【配色】
+- 空・水 #4A9FD8 → #1C7BB8 のなだらかなグラデーション（イラスト内のみ。UIには使わない）
+- 地色 #F2E8D8
+- 差し色 #E8845C（オレンジ）と #D8C86A（くすんだ黄）
+- 文字 #2A3A42
+
+【書体】
+- 見出し・季語: Shippori Mincho 600
+- 本文・UI: Zen Kaku Gothic New 400 / 500
+- 欧文の小ラベルは字間 0.25em と極端に空ける（参考にした umi.design の特徴）
+
+【レイアウト】
+- イラストは最低 70vh。その下から記事一覧が始まる
+- 記事一覧は2列。カードは角丸 8px 程度、影は使わず細い罫で囲む
+- 各カードに写真、日付、タイトル、2行の抜粋
+
+【日本語組版 — 必須】
+- 本文 line-height 1.9、letter-spacing 0.05em、一行あたり日本語35文字まで
+- font-style: italic は絶対に使わない。強調は太さか「」で
+- 季語や候の名前は明朝で、字間を広めに
+
+【使う文言 — ロレムイプサムは使わず、これをそのまま使うこと】
+- サイト名: うめ
+- 候の表示: 白露 末候 ─ 玄鳥去（つばめさる） / 2026.09.12
+- 記事タイトル: 「六月、雨の匂いについて」「週末に作ったスープ」「新しい器を買った日」
+- 本文: 朝はいつも同じ道を歩く。角のパン屋が開くのは七時ちょうどで、それより早く着いてしまった日は、川沿いのベンチに座っている。
+
+【やらないこと】
+写真のヒーロー画像、濃い影、紫〜青のグラデーション、絵文字、ステレオタイプな和風の意匠（市松、麻の葉、鳥居、桜の花びらを散らすなど）。あくまで現代のイラストレーションで季節を出すこと。</pre>
+    </article>
+
+    <!-- ───── 04 ───── -->
+    <article class="card">
+      <div class="card-top">
+        <div class="card-no">04</div>
+        <div class="card-id">
+          <div class="card-name">額装<em>The Quiet Frame</em></div>
+          <div class="card-lineage">系譜 — <b>mud Inc.</b> 主軸 ＋ <b>BARFOUT!</b> の余白</div>
+        </div>
+      </div>
+      <div class="card-move">ほぼ無彩色で、画面の内側に細い枠を一本。個性は<b>投稿数に応じて育つ生成モチーフ</b>一つだけが担います。飽きが来ず、写真の色を邪魔しない。四案で一番長持ちする方向。</div>
+      <div class="swatch-row"><i style="background:#F2F2F0"></i><i style="background:#E4E4E1"></i><i style="background:#121212"></i><i style="background:#9A9A96"></i><i style="background:#C8C8C4"></i><i style="background:#FFFFFF"></i></div>
+      <div class="pr-bar"><span class="pr-label">Prompt 04</span><button class="copy" type="button">Copy</button></div>
+      <pre class="prompt">日本語の個人ブログをデザインしてください。書き手は日本人の女性で、文章と写真を投稿します。極度に静かで、写真の色を一切邪魔しない設計にしてください。
+
+【画面】次の2枚を作ってください。
+1. トップページ
+2. 記事ページ
+
+【方向性】
+ほぼ無彩色。色数を絞りきり、余白と罫線と組版だけで品位を出す。装飾は一切しない。
+
+【この案の核 — 必ず入れること】
+1. 「額装」— ビューポートの内側 16px の位置に、1px の細い枠線を四辺に引く。中身はこの枠の内側でスクロールする。作品を額に入れたように見せる。これがこの案の署名。
+2. 「育つモチーフ」— トップのヒーロー領域に、Canvas で描く生成的な線画を一つだけ置く。等高線のように、ゆっくりとうねる細い線が何本も重なった図形。ゆっくり動き続ける（1周30秒以上かけるくらい遅く）。
+   重要: この線の本数は「これまでの投稿数」に比例する、という設定にする。投稿が増えるほど線が密になり、絵が育つ。画面の隅に「148本目」と小さく添える。
+3. セクションに番号を振る。「01.」「02.」のように、小さなモノスペースで見出しの左に置く。
+
+【配色】
+- 地色 #F2F2F0
+- 面 #FFFFFF
+- 文字 #121212
+- 弱い文字 #9A9A96
+- 罫線 #C8C8C4
+アクセント色は持たない。色は写真だけが持つ。
+
+【書体】
+- 見出し: Zen Kaku Gothic New 700。字間を詰め気味（-0.01em）に、大きく
+- 本文: Zen Kaku Gothic New 400
+- 数字・ラベル: JetBrains Mono 400、字間 0.15em、大文字
+- 欧文見出しの下に、小さく字間を広げたカタカナの副題を添える組み方をする（例: 大きく「Journal」、その下に小さく「ジャーナル」）
+
+【レイアウト】
+- 1段組み、本文幅は日本語35文字
+- 記事一覧は、カードを使わず「横罫で区切ったリスト」にする。1行に 日付 / タイトル / タグ
+- 写真は本文幅いっぱい。角丸なし、影なし
+- ホバー時のみ罫線の色が変わる程度の、極小の反応
+
+【日本語組版 — 必須】
+- 本文 line-height 2.0、letter-spacing 0.05em、一行あたり日本語35文字まで
+- font-style: italic は絶対に使わない。強調は太さか「」で
+- 見出しと本文の書体は同じ。太さと大きさだけで階層を作る
+
+【使う文言 — ロレムイプサムは使わず、これをそのまま使うこと】
+- サイト名: うめ / ume
+- 記事タイトル: 「六月、雨の匂いについて」「週末に作ったスープ」「新しい器を買った日」「駅裏の古本屋」
+- 投稿数の表示: 148本目
+- 本文: 朝はいつも同じ道を歩く。角のパン屋が開くのは七時ちょうどで、それより早く着いてしまった日は、川沿いのベンチに座って、水面がゆっくり明るくなっていくのをただ眺めている。
+
+【やらないこと】
+色のアクセント、カードUI、角丸、影、グラデーション、アイコン、絵文字、太いボタン。引き算だけで作ること。</pre>
+    </article>
+
+    <!-- ───── 05 ───── -->
+    <article class="card">
+      <div class="card-top">
+        <div class="card-no">05</div>
+        <div class="card-id">
+          <div class="card-name">書く画面<em>The Admin — run this last</em></div>
+          <div class="card-lineage">系譜 — <b>UGOKKO</b> のキャラクター ＋ <b>日東紅茶</b> の進捗表示 ＋ 前回の継続の設計</div>
+        </div>
+      </div>
+      <div class="card-move">参考サイト六つは全部「読む側」の画面でした。でも彼女が<b>毎日開くのは書く側</b>で、続くかどうかはここで決まります。前回話した往復記録・巨大な下限の低さ・折れない数え方を、全部この一枚に入れてあります。<b>01〜04のどれかを選んでから</b>、冒頭の一行を差し替えて投げてください。</div>
+      <div class="swatch-row"><i style="background:#EDE7DA"></i><i style="background:#D6301C"></i><i style="background:#2E5E4E"></i><i style="background:#F7F7F4"></i><i style="background:#1A1613"></i><i style="background:#C8C8C4"></i></div>
+      <div class="pr-bar"><span class="pr-label">Prompt 05</span><button class="copy" type="button">Copy</button></div>
+      <pre class="prompt">ブログの「管理画面（書く側）」をデザインしてください。使う人はたった一人、毎日書く日本人の女性です。読者向けの画面ではありません。
+
+※ 配色と書体は、先に選んだ案「番号日記 / 月刊うめ / 七十二候 / 額装」のうち___に合わせてください。（← ここに選んだ案の名前を書いてから投げること）
+
+【画面】次の2枚を作ってください。
+1. ダッシュボード（ログイン直後に見る画面）
+2. 執筆画面（エディタ）
+
+【最重要の前提 — デザインの判断はすべてこれに従うこと】
+この人は過去に、ブログを何日か書けなかった時に戻って来られず、そのまま辞めた経験がある。だから次の三つを絶対に守る。
+1. 「連続日数」を表示しない。ゼロに戻る数字を画面のどこにも置かない。途切れた瞬間に辞める原因になる。
+2. 数えるのは「減らないもの」だけ。通算の本数、今月書いた日数、これまでの最高記録。どれも下がらない。
+3. 空白の日を「失敗」として描かない。年間カレンダーは GitHub の草のようなマス目にするが、書かなかった日は赤やバツではなく、単に色が薄いだけにすること。
+
+【ダッシュボードに置くもの】
+- 画面の主役は、でかい一つのボタン「今日の一枚を書く」。他の何よりも大きく。
+- その真下に小さく「写真1枚と一行でも、立派な一本です」と添える。投稿の下限が低いことを毎日伝えるための文言。
+- 年間カレンダー（52週 × 7日のマス目）。書いた日は濃く、書いていない日は薄く。数字は出さない。
+- 「これまで 148本」「今月 11日」「最高記録 23日連続」の三つ。※最高記録は過去の実績であり、現在の連続日数ではない。壊れない。
+- 「往復 96回」— 相手（パートナー）が返事を書いた回数とのペア表示。彼女が書く → 相手が返事を書く、で1往復。これも減らない数字。
+- 相手の最新の返事を、ダッシュボードにそのまま抜粋で表示する。これがこの画面で一番うれしい場所なので、目立つ位置に置くこと。
+- 今日の書き出しのヒント（七十二候の季語など）を1行。押すとそれが本文に入る。
+- 小さなキャラクターを一体置く。ただし煽らない。急かす・責める・カウントダウンする表現は一切させない。「おかえり」と言うだけの存在にする。
+
+【執筆画面に置くもの】
+- Notion 風のブロックエディタ。左に「+」でブロックを追加。
+- 上部に、状態を示すごく控えめな表示: 下書き / 確認待ち / 予約済み / 公開中
+- 「シンプルモード」のトグル。押すとブロックメニューが消えて、文字だけの画面になる。
+- 自動保存の表示。「保存しました 14:32」程度の小ささで。
+- 画像はドラッグ＆ドロップ。枠を点線で示す。
+- 公開ボタンの隣に「あとで読み返す」（＝下書き保存）を同じ重さで置く。公開だけを正解にしない。
+
+【日本語組版 — 必須】
+- 本文・エディタ内 line-height 1.9、letter-spacing 0.05em
+- font-style: italic は絶対に使わない
+- エディタの本文幅は日本語35文字
+
+【使う文言 — ロレムイプサムは使わず、これをそのまま使うこと】
+- ボタン: 今日の一枚を書く
+- 数値: 148本 / 今月11日 / 最高記録23日 / 往復96回
+- 相手の返事の抜粋: 「スープの写真、湯気まで写ってた。あれ何時ごろ？」
+- ヒント: 白露 末候 ─ 玄鳥去。つばめが南へ帰るころ。
+- 編集中の記事タイトル: 新しい器を買った日
+
+【やらないこと】
+連続日数のカウンター、炎のアイコン、「あと◯時間で記録が途切れます」の類、ポイント、バッジ、レベル、ランキング、赤い警告、通知バッジの数字。どれも「書かないと損をする」という気持ちを作る装置で、この人には逆効果になる。使う感情は「誰かが待っている」だけにすること。</pre>
+    </article>
+
+  </section>
+
+  <footer class="foot">
+    <h3>前回の宿題が一つ残っています</h3>
+    <p>交換日記の案で、<b>あなたが詰まったら彼女がまた無読の状態に戻る</b>というリスクの話。これを「信頼できる読者をあと2〜3人（妹さん、親友など）招いて冗長性を持たせる」で解くか、「二人だけのままにして、あなた側の手間を限界まで軽くする」で解くか、まだ決まっていません。</p>
+    <p>プロンプト05はどちらでも動くように書いてありますが、ここを決めると往復の設計が固まります。デザインを選んだあとで構いません。</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var buttons = document.querySelectorAll(".copy");
+
+  function flash(btn, msg) {
+    var original = btn.getAttribute("data-original") || btn.textContent;
+    btn.setAttribute("data-original", original);
+    btn.textContent = msg;
+    btn.classList.add("ok");
+    window.setTimeout(function () {
+      btn.textContent = original;
+      btn.classList.remove("ok");
+    }, 1800);
+  }
+
+  function legacyCopy(text, btn) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "-1000px";
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    flash(btn, ok ? "コピーしました" : "手動で選択を");
+  }
+
+  Array.prototype.forEach.call(buttons, function (btn) {
+    btn.addEventListener("click", function () {
+      var pre = btn.closest(".card").querySelector("pre.prompt");
+      if (!pre) return;
+      var text = pre.textContent;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { flash(btn, "コピーしました"); },
+          function () { legacyCopy(text, btn); }
+        );
+      } else {
+        legacyCopy(text, btn);
+      }
+    });
+  });
+})();
+</script>
