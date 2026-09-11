@@ -177,20 +177,40 @@ a { color: var(--red); text-underline-offset: .2em; }
 .pr-label { font-family: var(--f-mono); font-size: .6rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); }
 .copy {
   font-family: var(--f-mono); font-size: .64rem; letter-spacing: .09em; text-transform: uppercase;
-  padding: .34rem .8rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+  padding: .34rem 1rem; min-height: 40px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
   cursor: pointer; border-radius: 0; transition: opacity .15s; font-weight: 600; white-space: nowrap;
 }
 .copy:hover { opacity: .8; }
 .copy.ok { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* Prompt body: collapse/expand rather than an inner scroller.
+   A nested scroll region traps the thumb on touch, so the page
+   itself must always be the thing that scrolls. */
+.pr-body { position: relative; }
 pre.prompt {
   margin: 0; padding: 1.25rem 1.35rem 1.4rem; background: var(--code-bg); color: var(--code-ink);
   font-family: var(--f-mono); font-size: .755rem; line-height: 1.95; letter-spacing: 0;
-  white-space: pre-wrap; word-break: break-word; overflow-x: auto; max-height: 26rem; overflow-y: auto;
+  white-space: pre-wrap; word-break: break-word; overflow: visible;
   border-top: 1px solid var(--code-rule);
 }
-pre.prompt::-webkit-scrollbar { width: 10px; height: 10px; }
-pre.prompt::-webkit-scrollbar-thumb { background: #3A3733; }
-pre.prompt::-webkit-scrollbar-track { background: transparent; }
+.pr-body.is-collapsed { max-height: 21rem; overflow: hidden; }
+.pr-body.is-collapsed::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6rem;
+  background: linear-gradient(to bottom, rgba(25,24,22,0), var(--code-bg));
+  pointer-events: none;
+}
+:root[data-theme="dark"] .pr-body.is-collapsed::after,
+:root:not([data-theme="light"]) .pr-body.is-collapsed::after {
+  background: linear-gradient(to bottom, rgba(10,9,8,0), var(--code-bg));
+}
+.pr-more {
+  display: block; width: 100%; min-height: 44px; padding: .8rem;
+  border: 0; border-top: 1px solid var(--code-rule);
+  background: var(--code-bg); color: var(--code-ink);
+  font-family: var(--f-mono); font-size: .66rem; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; cursor: pointer;
+}
+.pr-more:hover { color: var(--red); }
 
 /* ══════════ HOW TO USE ══════════ */
 .steps { display: grid; gap: .55rem; grid-template-columns: repeat(auto-fit, minmax(13rem,1fr)); }
@@ -205,11 +225,33 @@ pre.prompt::-webkit-scrollbar-track { background: transparent; }
 .foot p + p { margin-top: .75rem; }
 
 @media (max-width: 620px) {
-  body { font-size: 15px; }
+  body { font-size: 15px; line-height: 1.85; }
   .wrap { padding-left: 1.05rem; padding-right: 1.05rem; }
-  .ref { grid-template-columns: 2.4rem 1fr; }
-  .card-top { flex-direction: column; gap: .5rem; }
-  pre.prompt { font-size: .72rem; max-height: 22rem; }
+
+  /* colour chip becomes a horizontal band above the text, so the
+     reading column keeps the full screen width */
+  .ref { grid-template-columns: 1fr; }
+  .ref-chip { flex-direction: row; height: 1.4rem; }
+  .ref-meat { padding: .9rem 1rem 1rem; }
+  .ref-name { font-size: 1.02rem; }
+  .ref-name em { font-size: .62rem; }
+  .ref-read, .ref-steal { font-size: .86rem; }
+
+  .card-top { flex-direction: column; gap: .5rem; padding: 1.1rem 1.1rem .95rem; }
+  .card-name { font-size: 1.24rem; }
+  .card-lineage { font-size: .7rem; }
+  .card-move { font-size: .89rem; padding: 0 1.1rem 1.1rem; }
+
+  /* bigger type, and the block opens inline instead of scrolling inside */
+  pre.prompt { font-size: .8rem; line-height: 2.0; padding: 1.1rem 1.05rem 1.3rem; }
+  .pr-body.is-collapsed { max-height: 17rem; }
+  .pr-bar { padding: .5rem .6rem .5rem .9rem; }
+  .copy { font-size: .68rem; padding: .4rem 1.1rem; }
+
+  .hero h1 { line-height: 1.22; }
+  .step h4 { font-size: .93rem; }
+  .step p { font-size: .84rem; }
+  .foot p { font-size: .9rem; }
 }
 </style>
 
@@ -669,6 +711,39 @@ Zen Kaku Gothic New。見出しと数字は 900、本文は 400。
     document.body.removeChild(ta);
     flash(btn, ok ? "コピーしました" : "手動で選択を");
   }
+
+  /* Wrap each prompt so it can be collapsed and opened inline.
+     Done here rather than in the markup to keep the five prompt
+     blocks identical in source. */
+  Array.prototype.forEach.call(document.querySelectorAll("pre.prompt"), function (pre) {
+    var body = document.createElement("div");
+    body.className = "pr-body is-collapsed";
+    pre.parentNode.insertBefore(body, pre);
+    body.appendChild(pre);
+
+    /* Nothing to open if it already fits. */
+    if (pre.scrollHeight <= body.clientHeight + 4) {
+      body.classList.remove("is-collapsed");
+      return;
+    }
+
+    var more = document.createElement("button");
+    more.type = "button";
+    more.className = "pr-more";
+    more.textContent = "全文を開く ↓";
+    more.setAttribute("aria-expanded", "false");
+    body.parentNode.insertBefore(more, body.nextSibling);
+
+    more.addEventListener("click", function () {
+      var nowCollapsed = body.classList.toggle("is-collapsed");
+      more.textContent = nowCollapsed ? "全文を開く ↓" : "閉じる ↑";
+      more.setAttribute("aria-expanded", String(!nowCollapsed));
+      if (nowCollapsed) {
+        var top = body.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: top, behavior: "auto" });
+      }
+    });
+  });
 
   Array.prototype.forEach.call(buttons, function (btn) {
     btn.addEventListener("click", function () {

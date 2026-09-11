@@ -31,6 +31,7 @@
 
   --measure: 34rem;
   --rail: 13rem;
+  --pad: 1.75rem;   /* shell gutter — the mobile TOC bleeds by exactly this */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -105,7 +106,7 @@ p { margin: 0; }
   gap: 0 3.5rem;
   max-width: 62rem;
   margin: 0 auto;
-  padding: 0 1.75rem 8rem;
+  padding: 0 var(--pad) 8rem;
 }
 
 .rail { position: relative; }
@@ -218,6 +219,35 @@ p { margin: 0; }
   text-transform: uppercase;
 }
 .hero-meta b { color: var(--ink-2); font-weight: 600; }
+
+/* ============================================================
+   MOBILE SECTION NAV — stands in for the rail below 1020px
+   ============================================================ */
+.toc-m {
+  display: none;
+  grid-column: 1 / -1;
+  position: sticky; top: 0; z-index: 30;
+  margin: -2.25rem calc(var(--pad) * -1) 2.25rem;
+  padding: .35rem calc(var(--pad) - .35rem);
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+.toc-m::-webkit-scrollbar { display: none; }
+.toc-m a {
+  display: inline-block;
+  padding: .55rem .65rem;
+  font-size: .79rem;
+  letter-spacing: .03em;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.toc-m a .n { font-family: var(--f-display); color: var(--faint); margin-right: .3rem; }
+.toc-m a.is-active { color: var(--ai); border-bottom-color: var(--ai); }
+.toc-m a.is-active .n { color: var(--ai); }
 
 /* ============================================================
    SECTIONS
@@ -775,15 +805,95 @@ td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-s
 @media (max-width: 1020px) {
   .shell { grid-template-columns: 1fr; padding-bottom: 5rem; }
   .rail { display: none; }
+  .toc-m { display: block; }
+  /* clear the sticky strip when jumping to a section */
+  .sec { scroll-margin-top: 4rem; }
 }
+
+/* ── Tables become stacked cards ──
+   A 6-column table in a 336px viewport means side-scrolling every
+   row, so below this width each row is re-laid out as a block with
+   its column names printed as labels. */
+@media (max-width: 720px) {
+  .scroll-x { border: 0; background: transparent; overflow-x: visible; }
+  .scroll-x table { display: block; width: 100%; min-width: 0; font-size: .88rem; }
+  .scroll-x thead { display: none; }
+  .scroll-x tbody { display: block; }
+
+  .scroll-x tbody tr {
+    display: block; background: var(--surface); border: 1px solid var(--rule);
+    padding: .95rem 1.05rem 1.05rem; margin-bottom: .6rem;
+  }
+  .scroll-x tbody tr.row-pick { border-color: var(--ai); border-left-width: 3px; }
+
+  .scroll-x tbody th {
+    display: block; padding: 0 0 .55rem; border: 0; white-space: normal;
+    font-size: 1.02rem; font-weight: 700; line-height: 1.6;
+  }
+  .scroll-x tbody td {
+    display: block; padding: .55rem 0 0; margin-top: .55rem;
+    border: 0; border-top: 1px solid var(--rule); line-height: 1.85;
+    white-space: normal;
+  }
+  .scroll-x tbody td::before {
+    content: attr(data-label);
+    display: block; font-family: var(--f-mono); font-size: .58rem;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
+    margin-bottom: .15rem;
+  }
+  .t-feat tbody td:nth-of-type(1)::before { content: "中身"; }
+  .t-feat tbody td:nth-of-type(2)::before { content: "段階"; }
+  .t-mod  tbody td:nth-of-type(1)::before { content: "仕組み"; }
+  .t-mod  tbody td:nth-of-type(2)::before { content: "なぜ"; }
+  .t-mod  tbody td:nth-of-type(3)::before { content: "段階"; }
+  .t-ed   tbody td:nth-of-type(1)::before { content: "Notion風UI"; }
+  .t-ed   tbody td:nth-of-type(2)::before { content: "費用"; }
+  .t-ed   tbody td:nth-of-type(3)::before { content: "出力"; }
+  .t-ed   tbody td:nth-of-type(4)::before { content: "画像"; }
+  .t-ed   tbody td:nth-of-type(5)::before { content: "評価"; }
+}
+
 @media (max-width: 560px) {
   body { font-size: 15px; }
-  .shell { padding-left: 1.15rem; padding-right: 1.15rem; }
+  :root { --pad: 1.15rem; }
   .hero { padding-top: 3.5rem; }
   .frame { padding: 1.6rem 1.1rem; }
   .pv-c { flex-direction: column; gap: 1.25rem; min-height: 0; }
   .pv-c .vert { writing-mode: horizontal-tb; border-left: 0; border-bottom: 3px solid var(--pv-line); padding-left: 0; padding-bottom: .8rem; max-height: none; order: 0; }
   .sec { margin-bottom: 4rem; }
+
+  /* legible floors for the small stuff */
+  /* long JP source labels must be allowed to wrap on narrow phones */
+  .chip { font-size: .73rem; padding: .62rem .8rem; line-height: 1.45; white-space: normal; max-width: 100%; }
+  .srcs { gap: .5rem; }
+  .spec-foot { font-size: .72rem; gap: .35rem 1rem; padding: .8rem .95rem; line-height: 1.7; }
+  .spec-mood { font-size: .87rem; }
+  .card-note { font-size: .87rem; }
+  .card-take { font-size: .84rem; }
+  .find p { font-size: .89rem; }
+  .rule-box p { font-size: .84rem; }
+  .rule-box h4 { font-size: .89rem; }
+  .lede { font-size: .95rem; }
+  .stack-row dd { font-size: .89rem; }
+  .stack-row dd small { font-size: .84rem; }
+  .phase p { font-size: .83rem; }
+  .closing p, .closing ol { font-size: .9rem; }
+  .lab-body { padding: 1.4rem 1.1rem; }
+  .lab-bar { gap: .9rem 1.2rem; padding: .75rem .9rem; }
+  .seg button { padding: .62rem 1rem; font-size: .82rem; min-height: 42px; }
+  .pv-toggle { min-height: 42px; padding-left: 1rem; padding-right: 1rem; }
+  /* Thin visual track, thumb-sized hit area: the line is painted as a
+     background so the input itself can stay tall enough to grab. */
+  input[type="range"] {
+    width: 7.5rem; height: 30px; background: transparent;
+    background-image: linear-gradient(var(--rule-2), var(--rule-2));
+    background-size: 100% 3px; background-position: center; background-repeat: no-repeat;
+  }
+  input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; }
+  input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; }
+  .seal-block { padding: 1.25rem 1.1rem; }
+  .seal-block h4 { padding-right: 3.2rem; font-size: 1.04rem; }
+  .seal-block p { font-size: .89rem; }
 }
 
 .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
@@ -809,6 +919,17 @@ td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-s
       <span>Stack — <b>Next.js + Supabase</b></span>
     </div>
   </header>
+
+  <!-- ═════════════════ MOBILE TOC ═════════════════ -->
+  <nav class="toc-m" aria-label="目次">
+    <a class="toc-link" href="#s1"><span class="n">一</span>参考サイト</a>
+    <a class="toc-link" href="#s2"><span class="n">二</span>発見</a>
+    <a class="toc-link" href="#s3"><span class="n">三</span>日本語の組版</a>
+    <a class="toc-link" href="#s4"><span class="n">四</span>機能リスト</a>
+    <a class="toc-link" href="#s5"><span class="n">五</span>執筆ツール</a>
+    <a class="toc-link" href="#s6"><span class="n">六</span>デザイン案</a>
+    <a class="toc-link" href="#s7"><span class="n">七</span>構成</a>
+  </nav>
 
   <!-- ══════════════════════ RAIL ══════════════════════ -->
   <nav class="rail" aria-label="目次">
@@ -1052,7 +1173,7 @@ td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-s
 
       <h3 class="sub">読者側 — the public blog</h3>
       <div class="scroll-x">
-        <table>
+        <table class="t-feat">
           <thead><tr><th>機能</th><th>中身</th><th>段階</th></tr></thead>
           <tbody>
             <tr><th>記事一覧</th><td>トップページ。新着＋「はじめての方へ」の入口を併置する</td><td><span class="tag mvp">MVP</span></td></tr>
@@ -1073,7 +1194,7 @@ td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-s
 
       <h3 class="sub">彼女側 — the admin</h3>
       <div class="scroll-x">
-        <table>
+        <table class="t-feat">
           <thead><tr><th>機能</th><th>中身</th><th>段階</th></tr></thead>
           <tbody>
             <tr><th>ブロックエディタ</th><td>Notion風。見出し・画像・引用・区切り・ギャラリー。<a href="#s5">五</a>参照</td><td><span class="tag mvp">MVP</span></td></tr>
@@ -1094,7 +1215,7 @@ td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-s
       <p class="lede" style="margin-bottom:1.25rem">あなたが挙げた二つ、<b>読者のコメント</b>と<b>彼女自身の下書き</b>は、まったく別の仕組みです。混ぜないで設計します。</p>
 
       <div class="scroll-x">
-        <table>
+        <table class="t-mod">
           <thead><tr><th>対象</th><th>仕組み</th><th>なぜ</th><th>段階</th></tr></thead>
           <tbody>
             <tr class="row-pick"><th>コメント承認キュー</th><td>投稿はすべて非公開で保留。承認するまで読者には見えない</td><td>フィルタをすり抜けたものも公開面に届かない、最後の壁</td><td><span class="tag mvp">MVP</span></td></tr>
@@ -1127,7 +1248,7 @@ td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-s
       <p class="lede">「カスタマイズできる投稿機能」の心臓部です。主要な四つを調べました。結論は先に書きます——<b>BlockNote</b>。</p>
 
       <div class="scroll-x">
-        <table>
+        <table class="t-ed">
           <thead><tr><th>ライブラリ</th><th>Notion風UI</th><th>費用</th><th>出力</th><th>画像</th><th>評価</th></tr></thead>
           <tbody>
             <tr class="row-pick">
@@ -1477,8 +1598,9 @@ td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-s
 
   /* Deterministic: the active section is the last one whose top has passed
      30% of the viewport. Recomputed on scroll/resize, throttled to a frame. */
-  var links = document.querySelectorAll(".rail-link");
+  var links = document.querySelectorAll(".rail-link, .toc-link");
   var sections = document.querySelectorAll("section.sec");
+  var toc = document.querySelector(".toc-m");
   var ticking = false;
 
   function spy() {
@@ -1488,9 +1610,19 @@ td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-s
     Array.prototype.forEach.call(sections, function (s) {
       if (s.getBoundingClientRect().top <= line) { id = s.id; }
     });
+    var activeInToc = null;
     Array.prototype.forEach.call(links, function (l) {
-      l.classList.toggle("is-active", l.getAttribute("href") === "#" + id);
+      var on = l.getAttribute("href") === "#" + id;
+      l.classList.toggle("is-active", on);
+      if (on && toc && toc.contains(l)) { activeInToc = l; }
     });
+    /* Keep the current section visible in the mobile strip. Scrolls the
+       strip only — never the page. */
+    if (activeInToc && toc.scrollWidth > toc.clientWidth) {
+      toc.scrollLeft = Math.max(
+        0, activeInToc.offsetLeft - toc.clientWidth / 2 + activeInToc.offsetWidth / 2
+      );
+    }
   }
   function onScroll() {
     if (ticking) return;
