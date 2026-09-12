@@ -11,6 +11,10 @@ import { login, newPost } from "./helpers";
  * one place that reaches into post bodies.
  */
 test("search finds a published post by body text", async ({ page }) => {
+  // Both this marker and `nonsense` below hit /search, which logs a `search`
+  // event per query. scripts/cleanup-test-data.ts matches on these exact
+  // prefixes to sweep them out of the events table — change one here and
+  // update it there too.
   const marker = `検索テスト-${Date.now()}`;
 
   await login(page);

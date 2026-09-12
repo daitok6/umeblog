@@ -673,7 +673,7 @@
    motivation surface, so it borrows no color language from `.counter`. */
 .bar-row {
   display: grid;
-  grid-template-columns: 7rem 1fr 3.5rem;
+  grid-template-columns: minmax(7rem, 40%) 1fr 3.5rem;
   align-items: center;
   gap: 0.7rem;
   margin-bottom: 0.5rem;
@@ -681,6 +681,14 @@
 }
 .bar-row__label {
   color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Long free-text search queries in the insights zero-result list — same
+   single-line ellipsis treatment as .bar-row__label, but not confined to
+   the bar grid's label column. */
+.insights-query {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

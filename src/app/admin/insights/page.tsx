@@ -33,11 +33,23 @@ function fillTrend(trend: TrendPoint[], days: number): TrendPoint[] {
   return out;
 }
 
-function Bar({ label, value, total }: { label: string; value: number; total: number }) {
+function Bar({
+  label,
+  value,
+  total,
+  title,
+}: {
+  label: string;
+  value: number;
+  total: number;
+  title?: string;
+}) {
   const pct = total > 0 ? (value / total) * 100 : 0;
   return (
     <div className="bar-row">
-      <span className="bar-row__label">{label}</span>
+      <span className="bar-row__label" title={title ?? label}>
+        {label}
+      </span>
       <div className="bar-track">
         <div className="bar-fill" style={{ width: `${pct}%` }} />
       </div>
@@ -225,31 +237,45 @@ export default async function InsightsPage({
         <section className="panel">
           <div className="panel__head">
             <h2 className="panel__title">検索</h2>
-            <span className="label">{search.totalSearches}件</span>
+            {search.totalSearches > 0 && (
+              <span className="label" title={`直近${search.windowSize}件までを集計`}>
+                直近{search.totalSearches}件
+              </span>
+            )}
           </div>
-          <h3 className="label" style={{ marginBottom: "0.4rem" }}>
-            ゼロ件だった検索 — 次に書くもののヒント
-          </h3>
-          {search.recentZeroResult.length === 0 ? (
-            <p className="insights-empty">ゼロ件の検索はありません。</p>
+          {search.totalSearches === 0 ? (
+            <p className="insights-empty">検索はまだ使われていません。</p>
           ) : (
-            <ul style={{ margin: "0 0 1rem", paddingLeft: "1.2rem" }}>
-              {search.recentZeroResult.map((r, i) => (
-                <li key={i} className="label">
-                  「{r.q}」
-                </li>
-              ))}
-            </ul>
-          )}
-          <h3 className="label" style={{ marginBottom: "0.4rem" }}>
-            よく検索されるキーワード
-          </h3>
-          {search.topQueries.length === 0 ? (
-            <p className="insights-empty">まだデータがありません。</p>
-          ) : (
-            search.topQueries.map((q) => (
-              <Bar key={q.q} label={q.q} value={q.count} total={search.topQueries[0].count} />
-            ))
+            <>
+              <h3 className="label" style={{ marginBottom: "0.4rem" }}>
+                ゼロ件だった検索 — 次に書くもののヒント
+              </h3>
+              {search.recentZeroResult.length === 0 ? (
+                <p className="insights-empty">ゼロ件の検索はありません。</p>
+              ) : (
+                <ul style={{ margin: "0 0 1rem", paddingLeft: "1.2rem" }}>
+                  {search.recentZeroResult.map((r) => (
+                    <li key={r.q} className="label insights-query" title={r.q}>
+                      「{r.q}」 —{" "}
+                      {new Date(r.at).toLocaleDateString("ja-JP")}
+                      {r.times > 1 ? `（${r.times}回）` : ""}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <h3 className="label" style={{ marginBottom: "0.4rem" }}>
+                よく検索されるキーワード
+              </h3>
+              {search.topQueries.length === 0 ? (
+                <p className="insights-empty">
+                  まだ繰り返し検索されたキーワードはありません。
+                </p>
+              ) : (
+                search.topQueries.map((q) => (
+                  <Bar key={q.q} label={q.q} value={q.count} total={search.topQueries[0].count} />
+                ))
+              )}
+            </>
           )}
         </section>
       </div>

@@ -148,11 +148,14 @@ export async function getDailyTrend(days: number): Promise<TrendPoint[]> {
 }
 
 export type SearchInsights = {
-  /** Most recent zero-result queries — a literal list of what to write next. */
-  recentZeroResult: { q: string; at: number }[];
-  /** Most-repeated queries regardless of result count, most frequent first. */
+  /** Most recent distinct zero-result queries — a literal list of what to write next. */
+  recentZeroResult: { q: string; at: number; times: number }[];
+  /** Queries repeated at least twice, most frequent first — a single one-off
+   *  search isn't a trend, so it's excluded rather than padding the list. */
   topQueries: { q: string; count: number }[];
   totalSearches: number;
+  /** How many recent rows were scanned to build the above (see `limit`). */
+  windowSize: number;
 };
 
 /**
@@ -181,19 +184,44 @@ export async function getSearchInsights(limit = 300): Promise<SearchInsights> {
     }
   }
 
+  // Same query typed with different casing/whitespace ("Neko " vs "neko")
+  // should count as one query — normalize for grouping, but keep the first
+  // (most recent, since rows are newest-first) raw form for display.
+  const normalize = (q: string) => q.trim().normalize("NFKC");
+
   const freq = new Map<string, number>();
-  for (const p of parsed) freq.set(p.q, (freq.get(p.q) ?? 0) + 1);
+  for (const p of parsed) {
+    const key = normalize(p.q);
+    freq.set(key, (freq.get(key) ?? 0) + 1);
+  }
+
+  const zeroResultByKey = new Map<string, { q: string; at: number; times: number }>();
+  for (const p of parsed) {
+    if (p.count !== 0) continue;
+    const key = normalize(p.q);
+    const existing = zeroResultByKey.get(key);
+    if (existing) {
+      existing.times += 1;
+    } else {
+      zeroResultByKey.set(key, { q: p.q, at: p.at, times: 1 });
+    }
+  }
+
+  const displayQuery = new Map<string, string>();
+  for (const p of parsed) {
+    const key = normalize(p.q);
+    if (!displayQuery.has(key)) displayQuery.set(key, p.q);
+  }
 
   return {
-    recentZeroResult: parsed
-      .filter((p) => p.count === 0)
-      .slice(0, 30)
-      .map((p) => ({ q: p.q, at: p.at })),
+    recentZeroResult: [...zeroResultByKey.values()].slice(0, 12),
     topQueries: [...freq.entries()]
+      .filter(([, count]) => count >= 2)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 20)
-      .map(([q, count]) => ({ q, count })),
+      .map(([key, count]) => ({ q: displayQuery.get(key) ?? key, count })),
     totalSearches: parsed.length,
+    windowSize: limit,
   };
 }
 
