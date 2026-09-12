@@ -1,17 +1,19 @@
+import Link from "next/link";
 import Motif from "@/components/Motif";
-import PostList from "@/components/PostList";
-import { listPublished } from "@/lib/repo/posts";
+import PostRail from "@/components/PostRail";
+import { loadRail } from "@/lib/repo/posts";
 import { getStats } from "@/lib/repo/stats";
 import { getSettings } from "@/lib/repo/settings";
+import { parseRails, railTitle } from "@/lib/rails";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [posts, stats, settings] = await Promise.all([
-    listPublished(60),
-    getStats(),
-    getSettings(),
-  ]);
+  const [stats, settings] = await Promise.all([getStats(), getSettings()]);
+  const railConfigs = parseRails(settings.railsJson);
+  const rails = await Promise.all(
+    railConfigs.map(async (cfg) => ({ cfg, posts: await loadRail(cfg) })),
+  );
 
   return (
     <>
@@ -29,12 +31,14 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <div className="section-title">
-          <h2>Blog</h2>
-          <span className="kana-sub">ブログ</span>
-        </div>
+        {rails.map(
+          ({ cfg, posts }, i) =>
+            posts.length > 0 && <PostRail key={i} title={railTitle(cfg)} posts={posts} />,
+        )}
 
-        <PostList posts={posts} />
+        <p className="rail-more">
+          <Link href="/blog">すべての記事 →</Link>
+        </p>
       </div>
     </>
   );

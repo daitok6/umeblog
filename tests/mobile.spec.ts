@@ -14,19 +14,38 @@ for (const width of WIDTHS) {
   test(`public pages fit at ${width}px with no sideways scroll`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
 
-    for (const path of ["/", "/tags", "/about"]) {
+    for (const path of ["/", "/blog", "/tags", "/about"]) {
       await page.goto(path);
-      const overflow = await page.evaluate(() => ({
-        scrollW: document.documentElement.scrollWidth,
-        innerW: window.innerWidth,
-        offenders: [...document.querySelectorAll("body *")]
-          .filter((el) => {
-            const b = el.getBoundingClientRect();
-            return b.width > 0 && b.right > window.innerWidth + 2;
-          })
-          .map((el) => el.tagName + "." + String(el.className).slice(0, 30))
-          .slice(0, 5),
-      }));
+      const overflow = await page.evaluate(() => {
+        // A card inside a horizontally-scrolling rail is *meant* to sit
+        // beyond the fold — that's the whole point of the carousel — so its
+        // bounding rect legitimately extends past window.innerWidth. What
+        // must never happen is the outer PAGE gaining a sideways scrollbar,
+        // which the scrollW/innerW check below still catches independently.
+        function insideHorizontalScroller(el: Element): boolean {
+          for (let node = el.parentElement; node; node = node.parentElement) {
+            const cs = getComputedStyle(node);
+            const scrolls = cs.overflowX === "auto" || cs.overflowX === "scroll";
+            if (scrolls && node.scrollWidth > node.clientWidth + 1) return true;
+          }
+          return false;
+        }
+        return {
+          scrollW: document.documentElement.scrollWidth,
+          innerW: window.innerWidth,
+          offenders: [...document.querySelectorAll("body *")]
+            .filter((el) => {
+              const b = el.getBoundingClientRect();
+              return (
+                b.width > 0 &&
+                b.right > window.innerWidth + 2 &&
+                !insideHorizontalScroller(el)
+              );
+            })
+            .map((el) => el.tagName + "." + String(el.className).slice(0, 30))
+            .slice(0, 5),
+        };
+      });
       expect(overflow.offenders, `${path} @ ${width}`).toEqual([]);
       expect(overflow.scrollW).toBeLessThanOrEqual(overflow.innerW + 1);
     }
@@ -35,7 +54,7 @@ for (const width of WIDTHS) {
 
 test("the article page fits and stays readable at 375px", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
-  await page.goto("/");
+  await page.goto("/blog");
   await page.locator(".post-row__link").first().click();
   await page.locator(".prose").waitFor();
 

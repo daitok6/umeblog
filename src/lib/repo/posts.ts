@@ -1,4 +1,5 @@
 import { cache } from "react";
+import type { RailConfig } from "@/lib/rails";
 import { db, schema } from "@/lib/db";
 import { and, desc, eq, ilike, inArray, isNotNull, lte, max, or, sql } from "drizzle-orm";
 
@@ -93,16 +94,60 @@ export const getPublishedBySlug = cache(async (slug: string): Promise<PostWithMe
   return (await decorate(rows))[0] ?? null;
 });
 
-export async function listByTag(tagSlug: string): Promise<PostWithMeta[]> {
+/**
+ * Best-effort view increment, called from /api/view when a reader's browser
+ * loads a post — never from the server-rendered page itself. That page is
+ * `revalidate = 300`, so counting there would count cache regenerations
+ * (roughly one per five minutes of traffic) instead of actual reads.
+ *
+ * One atomic UPDATE: the Neon HTTP driver has no transactions, so a
+ * read-then-write here would race under concurrent requests.
+ */
+export async function recordView(slug: string): Promise<void> {
+  await db
+    .update(posts)
+    .set({ views: sql`${posts.views} + 1` })
+    .where(and(inArray(posts.slug, slugVariants(slug)), visible()));
+}
+
+export async function listByTag(tagSlug: string, limit?: number): Promise<PostWithMeta[]> {
   const variants = slugVariants(tagSlug);
   const tag = await db.query.tags.findFirst({ where: inArray(tags.slug, variants) });
   if (!tag) return [];
-  const rows = await db
+  let query = db
     .select({ p: posts })
     .from(posts)
     .innerJoin(postTags, eq(postTags.postId, posts.id))
     .where(and(eq(postTags.tagId, tag.id), visible()))
-    .orderBy(desc(posts.publishedAt));
+    .orderBy(desc(posts.publishedAt))
+    .$dynamic();
+  if (limit != null) query = query.limit(limit);
+  const rows = await query;
+  return decorate(rows.map((r) => r.p));
+}
+
+/** Home-page rail: newest reads first, straight off `views`. */
+export async function listMostViewed(limit = 12): Promise<PostWithMeta[]> {
+  const rows = await db
+    .select()
+    .from(posts)
+    .where(visible())
+    .orderBy(desc(posts.views), desc(posts.publishedAt))
+    .limit(limit);
+  return decorate(rows);
+}
+
+/** Home-page rail: posts with the most replies, ties broken by recency. */
+export async function listMostDiscussed(limit = 12): Promise<PostWithMeta[]> {
+  const rows = await db
+    .select({ p: posts, n: sql<number>`count(${replies.id})::int` })
+    .from(posts)
+    .innerJoin(replies, eq(replies.postId, posts.id))
+    .where(visible())
+    .groupBy(posts.id)
+    .having(sql`count(${replies.id}) > 0`)
+    .orderBy(desc(sql`count(${replies.id})`), desc(posts.publishedAt))
+    .limit(limit);
   return decorate(rows.map((r) => r.p));
 }
 
@@ -245,4 +290,24 @@ export async function unpublish(id: number): Promise<void> {
 
 export async function deletePost(id: number): Promise<void> {
   await db.delete(posts).where(eq(posts.id, id));
+}
+
+/**
+ * Dispatches a single home-page rail's config to the query that fills it.
+ * Kept here (rather than in rails.ts) since it needs the `db` connection;
+ * rails.ts stays a plain, importable-from-anywhere module.
+ */
+export async function loadRail(rail: RailConfig, limit = 12): Promise<PostWithMeta[]> {
+  switch (rail.kind) {
+    case "recent":
+      return listPublished(limit);
+    case "viewed":
+      return listMostViewed(limit);
+    case "discussed":
+      return listMostDiscussed(limit);
+    case "tag":
+      return rail.tag ? listByTag(rail.tag, limit) : [];
+    default:
+      return [];
+  }
 }

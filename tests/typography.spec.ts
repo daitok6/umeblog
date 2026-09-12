@@ -30,7 +30,7 @@ test("letter-spacing is loosened for Japanese", async ({ page }) => {
 });
 
 test("article prose keeps to roughly 35 Japanese characters per line", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/blog");
   await page.locator(".post-row__link").first().click();
   await page.locator(".prose").waitFor();
 

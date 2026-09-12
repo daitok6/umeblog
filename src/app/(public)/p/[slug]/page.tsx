@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import BlockRenderer from "@/components/BlockRenderer";
 import CommentForm from "@/components/CommentForm";
+import ViewBeacon from "@/components/ViewBeacon";
 import { formatDate } from "@/components/PostList";
 import { getPublishedBySlug } from "@/lib/repo/posts";
 import { listForPost } from "@/lib/repo/replies";
@@ -58,6 +59,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   return (
     <article className="container article">
+      <ViewBeacon slug={post.slug} />
       <div className="article__head">
         <span className="article__serial serial">
           {post.serial != null ? String(post.serial).padStart(3, "0") : ""}

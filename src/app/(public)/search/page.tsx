@@ -31,7 +31,7 @@ export default async function SearchPage({
         <span className="kana-sub">検索</span>
       </div>
 
-      <SearchForm defaultValue={query} variant="page" />
+      <SearchForm defaultValue={query} />
 
       {query ? (
         <>

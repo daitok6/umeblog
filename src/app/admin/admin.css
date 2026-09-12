@@ -583,6 +583,47 @@
   resize: vertical;
 }
 
+.rails-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+}
+.rails-editor__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.6rem;
+  border: 1px solid var(--rule);
+}
+.rails-editor__row select,
+.rails-editor__row input {
+  width: auto;
+  margin-bottom: 0;
+  flex: 1 1 auto;
+  min-width: 8em;
+}
+.rails-editor__actions {
+  display: flex;
+  gap: 0.3rem;
+  margin-left: auto;
+}
+.rails-editor__actions button {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  cursor: pointer;
+}
+.rails-editor__actions button:hover:not(:disabled) {
+  border-color: var(--rule-strong);
+}
+.rails-editor__actions button:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
 .hint {
   color: var(--muted);
   font-size: 13px;

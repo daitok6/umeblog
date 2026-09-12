@@ -10,6 +10,7 @@ export async function getSettings(): Promise<schema.SiteSettings> {
     bannerTitle: "",
     tagline: "日々を綴るブログ",
     aboutMd: "",
+    railsJson: "",
   };
   await db.insert(schema.siteSettings).values(fallback).onConflictDoNothing();
   return fallback;

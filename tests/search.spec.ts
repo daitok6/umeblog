@@ -2,9 +2,13 @@ import { test, expect } from "@playwright/test";
 import { login, newPost } from "./helpers";
 
 /**
- * Publish a post with a unique marker, then find it through the header
- * search — and confirm a nonsense query returns no results instead of
- * erroring or listing everything.
+ * Publish a post with a unique marker, then find it through the /search
+ * page's own search form — and confirm a nonsense query returns no results
+ * instead of erroring or listing everything.
+ *
+ * The header no longer carries a search box (see tests/blog.spec.ts for the
+ * instant title/tag filter on /blog that replaced it); /search remains the
+ * one place that reaches into post bodies.
  */
 test("search finds a published post by body text", async ({ page }) => {
   const marker = `検索テスト-${Date.now()}`;
@@ -25,8 +29,8 @@ test("search finds a published post by body text", async ({ page }) => {
   await page.locator("button", { hasText: "公開する" }).click();
   await page.waitForURL("**/admin/posts");
 
-  // ── A reader searches from the header ───────────────────
-  await page.goto("/");
+  // ── A reader searches from the /search page itself ──────
+  await page.goto("/search");
   await page.locator(".site-search__input").fill(marker);
   await page.locator(".site-search__submit").click();
 

@@ -57,13 +57,25 @@ export const posts = pgTable(
     publishedAt: bigint("published_at", { mode: "number" }),
     /** The photo + one line format. First-class, not a lesser post. */
     isTiny: boolean("is_tiny").notNull().default(false),
+    /**
+     * The one stored counter in this codebase — everything in stats.ts is
+     * deliberately DERIVED rather than stored, but a view leaves no other
+     * trace anywhere in the database, so there is nothing to derive it from.
+     * Incremented via `recordView()`, never read back into stats.ts; it
+     * exists only to order the "よく読まれている" rail on the home page.
+     */
+    views: integer("views").notNull().default(0),
     authorId: integer("author_id")
       .notNull()
       .references(() => users.id),
     createdAt: bigint("created_at", { mode: "number" }).notNull(),
     updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
   },
-  (t) => [index("posts_status_idx").on(t.status), index("posts_published_idx").on(t.publishedAt)],
+  (t) => [
+    index("posts_status_idx").on(t.status),
+    index("posts_published_idx").on(t.publishedAt),
+    index("posts_views_idx").on(t.views),
+  ],
 );
 
 export const tags = pgTable("tags", {
@@ -135,6 +147,12 @@ export const siteSettings = pgTable("site_settings", {
   bannerTitle: text("banner_title").notNull().default(""),
   tagline: text("tagline").notNull().default(""),
   aboutMd: text("about_md").notNull().default(""),
+  /**
+   * JSON-encoded RailConfig[] (see src/lib/rails.ts) — which rails the home
+   * page shows, and in what order. Empty means "use DEFAULT_RAILS", the same
+   * empty-means-inherit convention as bannerTitle above.
+   */
+  railsJson: text("rails_json").notNull().default(""),
 });
 
 export type Post = typeof posts.$inferSelect;

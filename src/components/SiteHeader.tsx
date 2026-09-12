@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import SearchForm from "@/components/SearchForm";
 
 /**
  * Sticky, auto-hiding top bar: hidden on scroll-down, shown on any
@@ -64,7 +63,7 @@ export default function SiteHeader({ title }: { title: string }) {
           {title}
         </Link>
         <nav className="site-header__nav">
-          <Link className="nav-link" href="/">
+          <Link className="nav-link" href="/blog">
             Blog
           </Link>
           <Link className="nav-link" href="/tags">
@@ -73,7 +72,6 @@ export default function SiteHeader({ title }: { title: string }) {
           <Link className="nav-link" href="/about">
             About
           </Link>
-          <SearchForm variant="header" />
         </nav>
       </div>
     </header>
