@@ -1,4 +1,13 @@
-import { pgTable, text, integer, bigint, boolean, primaryKey, index } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  integer,
+  bigint,
+  boolean,
+  primaryKey,
+  index,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 
 /**
  * Postgres (Neon) schema. Timestamps are epoch-millisecond integers stored as
@@ -75,6 +84,56 @@ export const posts = pgTable(
     index("posts_status_idx").on(t.status),
     index("posts_published_idx").on(t.publishedAt),
     index("posts_views_idx").on(t.views),
+  ],
+);
+
+/**
+ * Append-only analytics events. Where `posts.views` is one integer with no
+ * other trace, this is the trace: one row per view/read/search/click, with
+ * enough context to derive read-through rate, drop-off, and traffic source
+ * at query time. Nothing here is ever updated in place except the `read`
+ * row's scroll/dwell fields, which only ever grow (see recordEvent()).
+ *
+ * `visitorHash` rotates daily (see src/lib/analytics/identity.ts) — it can
+ * dedupe same-day repeat views but deliberately cannot link one visitor
+ * across days. That is a privacy trade, not an oversight.
+ */
+export const events = pgTable(
+  "events",
+  {
+    id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+    type: text("type", { enum: ["view", "read", "search", "click"] }).notNull(),
+    postId: integer("post_id").references(() => posts.id, { onDelete: "set null" }),
+    /** Denormalised path — survives post deletion, covers non-post pages. */
+    path: text("path").notNull().default(""),
+    visitorHash: text("visitor_hash").notNull(),
+    /** Random per-tab id from sessionStorage. Ties a session's events together. */
+    sessionId: text("session_id").notNull().default(""),
+    /** 'YYYY-MM-DD', JST. Exists only to make the dedupe unique index possible. */
+    dayBucket: text("day_bucket").notNull(),
+    /** type='read': max scroll depth reached, 0-100. */
+    scrollPct: integer("scroll_pct"),
+    /** type='read': visible-tab time only, milliseconds. */
+    dwellMs: integer("dwell_ms"),
+    /** First-touch attribution, carried for the whole session. */
+    source: text("source").notNull().default(""),
+    referrerHost: text("referrer_host").notNull().default(""),
+    campaign: text("campaign").notNull().default(""),
+    medium: text("medium").notNull().default(""),
+    device: text("device", { enum: ["mobile", "desktop"] }),
+    country: text("country").notNull().default(""),
+    /** JSON, type-specific extras (search query + result count, click href). */
+    meta: text("meta").notNull().default(""),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+  },
+  (t) => [
+    index("events_created_idx").on(t.createdAt),
+    index("events_post_created_idx").on(t.postId, t.createdAt),
+    index("events_type_created_idx").on(t.type, t.createdAt),
+    // One (type, post, visitor, day) tuple can only ever insert once — this
+    // IS the server-side dedupe, enforced by Postgres rather than trusted to
+    // application logic.
+    uniqueIndex("events_dedupe_idx").on(t.type, t.postId, t.visitorHash, t.dayBucket),
   ],
 );
 
@@ -172,3 +231,5 @@ export type Reply = typeof replies.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
 export type ImageRow = typeof images.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
+export type AnalyticsEvent = typeof events.$inferSelect;
+export type NewAnalyticsEvent = typeof events.$inferInsert;

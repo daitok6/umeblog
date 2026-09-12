@@ -95,7 +95,23 @@ export const getPublishedBySlug = cache(async (slug: string): Promise<PostWithMe
 });
 
 /**
- * Best-effort view increment, called from /api/view when a reader's browser
+ * Numeric id for a slug, for callers that only need the FK (the analytics
+ * ingest route) and shouldn't pay for `decorate()`'s tag/cover/reply joins
+ * on every tracked event. Returns null for a missing or unpublished slug —
+ * events.postId is nullable specifically so this can be recorded as null
+ * rather than the caller having to skip the event entirely.
+ */
+export async function getPostIdBySlug(slug: string): Promise<number | null> {
+  const rows = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(inArray(posts.slug, slugVariants(slug)), visible()))
+    .limit(1);
+  return rows[0]?.id ?? null;
+}
+
+/**
+ * Best-effort view increment, called from /api/track when a reader's browser
  * loads a post — never from the server-rendered page itself. That page is
  * `revalidate = 300`, so counting there would count cache regenerations
  * (roughly one per five minutes of traffic) instead of actual reads.
