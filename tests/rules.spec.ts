@@ -41,7 +41,7 @@ test("every figure on the dashboard is non-decreasing or an explicit past record
   await page.goto("/admin");
 
   const labels = await page.locator(".counter__label").allInnerTexts();
-  expect(labels).toEqual(["これまで", "今月", "最高記録", "往復"]);
+  expect(labels).toEqual(["これまで", "今月", "最高記録", "往復", "閲覧"]);
 
   // 最高記録 must be marked as a record that cannot be lost, so it is never
   // mistaken for a live streak.

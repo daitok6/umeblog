@@ -145,6 +145,15 @@ export const siteSettings = pgTable("site_settings", {
   title: text("title").notNull().default("うめ"),
   /** Header wordmark. Empty means "use `title`", so an untouched blog looks unchanged. */
   bannerTitle: text("banner_title").notNull().default(""),
+  /**
+   * Narrow-viewport override for `title`. Empty means "use `title`" — same
+   * inherit-when-empty convention as bannerTitle. Visible UI only: metadata,
+   * OG tags and the RSS feed always use `title`, since they render without a
+   * viewport to key off.
+   */
+  titleMobile: text("title_mobile").notNull().default(""),
+  /** Narrow-viewport override for `bannerTitle`. Empty means "use the resolved banner title". */
+  bannerTitleMobile: text("banner_title_mobile").notNull().default(""),
   tagline: text("tagline").notNull().default(""),
   aboutMd: text("about_md").notNull().default(""),
   /**

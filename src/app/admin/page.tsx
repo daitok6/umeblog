@@ -84,6 +84,13 @@ export default async function DashboardPage() {
           </span>
           <span className="counter__label label">往復</span>
         </div>
+        <div className="counter">
+          <span className="counter__n">
+            {stats.totalViews.toLocaleString("ja-JP")}
+            <span className="counter__unit">回</span>
+          </span>
+          <span className="counter__label label">閲覧</span>
+        </div>
       </div>
 
       <div className="dash-grid">

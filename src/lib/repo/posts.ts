@@ -201,8 +201,11 @@ export async function searchPublished(q: string, limit = 50): Promise<PostWithMe
 }
 
 /** Admin view — everything, any status. */
-export async function listAll(): Promise<PostWithMeta[]> {
-  const rows = await db.select().from(posts).orderBy(desc(posts.updatedAt));
+export async function listAll(sort: "updated" | "views" = "updated"): Promise<PostWithMeta[]> {
+  const rows =
+    sort === "views"
+      ? await db.select().from(posts).orderBy(desc(posts.views), desc(posts.updatedAt))
+      : await db.select().from(posts).orderBy(desc(posts.updatedAt));
   return decorate(rows);
 }
 

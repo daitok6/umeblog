@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import ResponsiveName from "@/components/ResponsiveName";
 
 /**
  * Sticky, auto-hiding top bar: hidden on scroll-down, shown on any
@@ -11,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
  * in-flight `requestAnimationFrame`, so at most one state update happens per
  * frame no matter how many scroll events fire.
  */
-export default function SiteHeader({ title }: { title: string }) {
+export default function SiteHeader({ wide, narrow }: { wide: string; narrow: string }) {
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const lastY = useRef(0);
@@ -60,7 +61,7 @@ export default function SiteHeader({ title }: { title: string }) {
     >
       <div className="container site-header__inner">
         <Link href="/" className="site-header__logo">
-          {title}
+          <ResponsiveName wide={wide} narrow={narrow} />
         </Link>
         <nav className="site-header__nav">
           <Link className="nav-link" href="/blog">

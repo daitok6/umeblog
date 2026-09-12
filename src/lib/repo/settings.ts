@@ -8,6 +8,8 @@ export async function getSettings(): Promise<schema.SiteSettings> {
     id: 1,
     title: "うめ",
     bannerTitle: "",
+    titleMobile: "",
+    bannerTitleMobile: "",
     tagline: "日々を綴るブログ",
     aboutMd: "",
     railsJson: "",
@@ -20,4 +22,15 @@ export async function updateSettings(
   patch: Partial<Omit<schema.SiteSettings, "id">>,
 ): Promise<void> {
   await db.update(schema.siteSettings).set(patch).where(eq(schema.siteSettings.id, 1));
+}
+
+/** Wide (default) vs narrow-viewport header wordmark. Visible UI only. */
+export function bannerNames(s: schema.SiteSettings): { wide: string; narrow: string } {
+  const wide = s.bannerTitle || s.title;
+  return { wide, narrow: s.bannerTitleMobile || wide };
+}
+
+/** Wide (default) vs narrow-viewport site name. Visible UI only — metadata, OG and RSS keep `title`. */
+export function siteNames(s: schema.SiteSettings): { wide: string; narrow: string } {
+  return { wide: s.title, narrow: s.titleMobile || s.title };
 }

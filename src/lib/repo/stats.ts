@@ -4,7 +4,11 @@ import { desc, eq, isNotNull, sql } from "drizzle-orm";
 const { posts, replies } = schema;
 
 /**
- * Every figure here is DERIVED at read time. None is stored.
+ * Almost every figure here is DERIVED at read time. None is stored, with one
+ * exception: `totalViews`, summed from `posts.views` (the one stored counter
+ * in the app — see its column comment in the schema). It is still summed
+ * fresh on every read rather than cached, so it can't drift out of step with
+ * the posts it's counting.
  *
  * Stored counters drift the moment anything is edited, unpublished or
  * back-dated, and a motivation number that is quietly wrong is worse than no
@@ -26,6 +30,8 @@ export type Stats = {
   bestRun: number;
   /** 往復 — posts that received at least one reply. One exchange = she wrote, someone answered. */
   exchanges: number;
+  /** 閲覧 — total views across every post, all time. */
+  totalViews: number;
   /** Epoch ms of the most recent publish, or null. Drives the おかえり greeting. */
   lastPublishedAt: number | null;
   /** Days since the last publish. Used only to soften the greeting, never to scold. */
@@ -84,6 +90,10 @@ export async function getStats(): Promise<Stats> {
     .select({ n: sql<number>`count(distinct ${replies.postId})::int` })
     .from(replies);
 
+  const [viewRow] = await db
+    .select({ n: sql<number>`coalesce(sum(${posts.views}), 0)::int` })
+    .from(posts);
+
   const lastPublishedAt = times.length ? Math.max(...times) : null;
   const daysSinceLast =
     lastPublishedAt == null
@@ -95,6 +105,7 @@ export async function getStats(): Promise<Stats> {
     daysThisMonth: monthKeys.size,
     bestRun: longestRun(times.map(startOfDay)),
     exchanges: Number(exchangeRow?.n ?? 0),
+    totalViews: Number(viewRow?.n ?? 0),
     lastPublishedAt,
     daysSinceLast,
   };

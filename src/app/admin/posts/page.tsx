@@ -17,8 +17,14 @@ function fmt(ms: number | null): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export default async function AdminPostsPage() {
-  const [posts, user] = await Promise.all([listAll(), getSessionUser()]);
+export default async function AdminPostsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string }>;
+}) {
+  const sp = await searchParams;
+  const sort = sp.sort === "views" ? "views" : "updated";
+  const [posts, user] = await Promise.all([listAll(sort), getSessionUser()]);
 
   return (
     <div>
@@ -31,6 +37,15 @@ export default async function AdminPostsPage() {
         ) : null}
       </div>
 
+      <div className="tabs">
+        <Link href="/admin/posts" aria-current={sort === "updated"}>
+          更新順
+        </Link>
+        <Link href="/admin/posts?sort=views" aria-current={sort === "views"}>
+          閲覧順
+        </Link>
+      </div>
+
       <table className="admin-table">
         <thead>
           <tr>
@@ -38,6 +53,7 @@ export default async function AdminPostsPage() {
             <th>タイトル</th>
             <th>状態</th>
             <th>公開日</th>
+            <th>閲覧</th>
             <th>返事</th>
           </tr>
         </thead>
@@ -55,6 +71,7 @@ export default async function AdminPostsPage() {
                 <span className={`status status--${p.status}`}>{STATUS_LABEL[p.status]}</span>
               </td>
               <td className="label">{fmt(p.publishedAt ?? p.publishAt)}</td>
+              <td className="label">{p.views > 0 ? p.views.toLocaleString("ja-JP") : "—"}</td>
               <td className="label">{p.replyCount > 0 ? `${p.replyCount}` : "—"}</td>
             </tr>
           ))}

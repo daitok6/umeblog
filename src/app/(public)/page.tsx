@@ -1,15 +1,17 @@
 import Link from "next/link";
 import Motif from "@/components/Motif";
 import PostRail from "@/components/PostRail";
+import ResponsiveName from "@/components/ResponsiveName";
 import { loadRail } from "@/lib/repo/posts";
 import { getStats } from "@/lib/repo/stats";
-import { getSettings } from "@/lib/repo/settings";
+import { getSettings, siteNames } from "@/lib/repo/settings";
 import { parseRails, railTitle } from "@/lib/rails";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
   const [stats, settings] = await Promise.all([getStats(), getSettings()]);
+  const site = siteNames(settings);
   const railConfigs = parseRails(settings.railsJson);
   const rails = await Promise.all(
     railConfigs.map(async (cfg) => ({ cfg, posts: await loadRail(cfg) })),
@@ -25,7 +27,9 @@ export default async function HomePage() {
           </div>
           <div className="hero__body">
             <div>
-              <h1 className="hero__title">{settings.title}</h1>
+              <h1 className="hero__title">
+                <ResponsiveName wide={site.wide} narrow={site.narrow} />
+              </h1>
               {settings.tagline ? <p className="hero__tagline">{settings.tagline}</p> : null}
             </div>
           </div>

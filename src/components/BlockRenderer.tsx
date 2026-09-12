@@ -96,6 +96,7 @@ export default function BlockRenderer({ json }: { json: string }) {
                   width={Number(b.props?.previewWidth ?? 1200)}
                   height={800}
                   sizes="(max-width: 768px) 100vw, 720px"
+                  quality={90}
                   style={{ width: "100%", height: "auto" }}
                 />
                 {alt ? <figcaption className="label">{alt}</figcaption> : null}
