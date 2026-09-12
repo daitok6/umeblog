@@ -33,16 +33,20 @@ export type RecordEventInput = {
  * reasoning as recordView, applied with an ON CONFLICT clause instead of a
  * plain UPDATE.
  *
- * Dedupe key is (type, postId, visitorHash, dayBucket) for both 'view' and
- * 'read': one visitor, one post, one day. For 'view' a repeat is simply
- * dropped. For 'read' a repeat (e.g. the reader switches tabs mid-article
- * and comes back) instead widens the existing row via GREATEST, so the
- * stored scrollPct/dwellMs is always the session's high-water mark, never a
- * sum and never silently overwritten by a shorter subsequent visit.
- *
- * 'search' and 'click' are never deduped — postId is null for most of them,
- * and Postgres treats NULL as distinct from NULL in a unique index, so they
- * simply always insert.
+ * Dedupe key is (type, postId, visitorHash, dayBucket) for every type. For
+ * 'read' a repeat (e.g. the reader switches tabs mid-article and comes back)
+ * widens the existing row via GREATEST, so the stored scrollPct/dwellMs is
+ * always the session's high-water mark, never a sum and never silently
+ * overwritten by a shorter subsequent visit. Every other type (view, click,
+ * search) simply drops a repeat within the same (post, visitor, day) —
+ * this MUST use onConflictDoNothing rather than a bare insert: 'click' has
+ * a real, non-null postId (the article the reader is on), so a second
+ * outbound-link click from the same visitor on the same post on the same
+ * day collides with the first on this exact unique index, and a plain
+ * insert would throw instead of silently coalescing. ('search' happens to
+ * always carry postId=null today, and Postgres never treats two NULLs as a
+ * collision — so it would be safe either way — but it's routed through the
+ * same guarded path for consistency rather than relying on that detail.)
  */
 export async function recordEvent(input: RecordEventInput): Promise<void> {
   const now = Date.now();
@@ -81,10 +85,5 @@ export async function recordEvent(input: RecordEventInput): Promise<void> {
     return;
   }
 
-  if (input.type === "view") {
-    await db.insert(events).values(row).onConflictDoNothing({ target });
-    return;
-  }
-
-  await db.insert(events).values(row);
+  await db.insert(events).values(row).onConflictDoNothing({ target });
 }

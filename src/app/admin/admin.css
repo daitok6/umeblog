@@ -667,3 +667,61 @@
     align-items: center;
   }
 }
+
+/* Insights dashboard — plain horizontal bars, no charting library.
+   Monochrome on purpose: this page is read-only data, not a second
+   motivation surface, so it borrows no color language from `.counter`. */
+.bar-row {
+  display: grid;
+  grid-template-columns: 7rem 1fr 3.5rem;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.5rem;
+  font-size: 13px;
+}
+.bar-row__label {
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-track {
+  background: var(--sunken);
+  height: 10px;
+}
+.bar-fill {
+  background: var(--ink-2);
+  height: 100%;
+}
+.bar-row__value {
+  text-align: right;
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 40px;
+  margin-top: 0.3rem;
+}
+.scroll-chart__bar {
+  flex: 1;
+  background: var(--sunken);
+  min-height: 2px;
+}
+.scroll-chart__bar--fill {
+  background: var(--ink-2);
+}
+
+.insights-table td,
+.insights-table th {
+  font-size: 13px;
+}
+.insights-empty {
+  color: var(--faint);
+  font-size: 13px;
+  padding: 1rem 0;
+}

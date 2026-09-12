@@ -199,6 +199,23 @@ export const loginAttempts = pgTable(
   (t) => [index("login_attempts_ip_idx").on(t.ipHash, t.createdAt)],
 );
 
+/**
+ * Short links for placements where a UTM-tagged URL can't be used cleanly —
+ * an Instagram bio, a printed QR code, a LINE broadcast. `/go/[code]` looks
+ * one of these up, logs a `click` event, and 302s to `destination`. Clicks
+ * aren't counted here as a stored number (see the `views` column comment on
+ * `posts` for why a raw counter with no other trace is the thing this whole
+ * feature exists to avoid) — they're derived from `events` at read time.
+ */
+export const shortLinks = pgTable("short_links", {
+  id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+  code: text("code").notNull().unique(),
+  destination: text("destination").notNull(),
+  /** Human note — "Instagram bio", "名刺のQRコード" — never shown publicly. */
+  label: text("label").notNull().default(""),
+  createdAt: bigint("created_at", { mode: "number" }).notNull(),
+});
+
 export const siteSettings = pgTable("site_settings", {
   id: integer("id").primaryKey(),
   title: text("title").notNull().default("うめ"),
@@ -233,3 +250,5 @@ export type ImageRow = typeof images.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
 export type AnalyticsEvent = typeof events.$inferSelect;
 export type NewAnalyticsEvent = typeof events.$inferInsert;
+export type ShortLink = typeof shortLinks.$inferSelect;
+export type NewShortLink = typeof shortLinks.$inferInsert;

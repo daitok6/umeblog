@@ -16,6 +16,12 @@ import { useEffect } from "react";
  * `document.visibilityState === "visible"` — a tab left open in the
  * background must never look like an hours-long read.
  *
+ * Also new: a delegated click listener reports outbound links (affiliate
+ * cards, links inside the article body) as "click" events. It's delegated
+ * on `document` rather than attached per-link, so it keeps working for
+ * links inside BlockNote-rendered content without either component needing
+ * to know about the other.
+ *
  * Deliberately not counted: bots, ad blockers, and no-JS readers (same
  * trade as before). Deliberately not used: `beforeunload`, which is
  * unreliable on mobile Safari — the exit signal is `visibilitychange` plus
@@ -83,6 +89,31 @@ export default function ReadTracker({ slug }: { slug: string }) {
       sendRead();
     }
 
+    function onClick(e: MouseEvent) {
+      const anchor = (e.target as Element | null)?.closest?.("a[href]");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href") ?? "";
+      let url: URL;
+      try {
+        url = new URL(href, location.href);
+      } catch {
+        return;
+      }
+      // Only outbound links are worth a click event — internal navigation
+      // (tags, other posts, admin) is already fully visible as a "view" on
+      // the destination page.
+      if (url.hostname === location.hostname) return;
+      send({
+        type: "click",
+        slug,
+        sessionId,
+        path,
+        device,
+        href: url.href,
+        ...attr,
+      });
+    }
+
     const viewKey = `viewed:${slug}`;
     let alreadyViewed = false;
     try {
@@ -99,11 +130,15 @@ export default function ReadTracker({ slug }: { slug: string }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("pagehide", onPageHide);
+    // Capture phase: sendBeacon must fire before a same-tab navigation (or a
+    // framework router) can intercept and stop the click from bubbling.
+    document.addEventListener("click", onClick, { capture: true });
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", onPageHide);
+      document.removeEventListener("click", onClick, { capture: true });
     };
   }, [slug]);
 

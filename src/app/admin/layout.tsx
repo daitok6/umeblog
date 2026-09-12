@@ -29,6 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 <span className="admin-bar__pending">{counts.pending}</span>
               ) : null}
             </Link>
+            {user.role === "author" ? <Link href="/admin/insights">分析</Link> : null}
             {user.role === "author" ? <Link href="/admin/settings">設定</Link> : null}
             <Link href="/" target="_blank" rel="noopener">
               サイトを見る

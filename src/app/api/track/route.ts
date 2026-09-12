@@ -7,7 +7,7 @@ import { classifySource, isBot } from "@/lib/analytics/classify";
 
 export const runtime = "nodejs";
 
-const TYPES = new Set<EventType>(["view", "read"]);
+const TYPES = new Set<EventType>(["view", "read", "click"]);
 
 function str(v: unknown, max: number): string {
   return typeof v === "string" ? v.slice(0, max) : "";
@@ -77,6 +77,10 @@ export async function POST(req: Request) {
     await recordView(slug);
   }
 
+  // 'click' carries which outbound link was followed — the only type-specific
+  // extra this route needs to thread through today.
+  const meta = eventType === "click" ? JSON.stringify({ href: str(b.href, 500) }) : "";
+
   await recordEvent({
     type: eventType,
     postId,
@@ -92,6 +96,7 @@ export async function POST(req: Request) {
     medium,
     device,
     country,
+    meta,
   });
 
   return new NextResponse(null, { status: 204 });
