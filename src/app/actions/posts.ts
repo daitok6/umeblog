@@ -1,0 +1,115 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { requireAuthor, requireAuthorOrRedirect, requireUserOrRedirect } from "@/lib/auth/session";
+import * as postsRepo from "@/lib/repo/posts";
+import { setPostTags, slugify } from "@/lib/repo/tags";
+import { addReply } from "@/lib/repo/replies";
+
+export async function createPostAction(isTiny: boolean): Promise<never> {
+  const user = await requireAuthorOrRedirect();
+  const id = await postsRepo.createDraft(user.id, isTiny);
+  redirect(`/admin/posts/${id}`);
+}
+
+export type SaveResult = { ok: boolean; savedAt: number; error?: string };
+
+/**
+ * Autosave target. Kept deliberately small and idempotent — it is called
+ * every few seconds while she types.
+ */
+export async function savePostAction(input: {
+  id: number;
+  title: string;
+  lead: string;
+  contentJson: string;
+  tags: string[];
+}): Promise<SaveResult> {
+  try {
+    await requireAuthor();
+    await postsRepo.updatePost(input.id, {
+      title: input.title,
+      lead: input.lead,
+      contentJson: input.contentJson,
+    });
+    await setPostTags(input.id, input.tags);
+    return { ok: true, savedAt: Date.now() };
+  } catch (e) {
+    return { ok: false, savedAt: 0, error: e instanceof Error ? e.message : "save failed" };
+  }
+}
+
+/** Slugs are only fixed at publish time, so the title can change freely while drafting. */
+async function ensureSlug(id: number, title: string) {
+  const post = await postsRepo.getById(id);
+  if (!post) return;
+  if (!post.slug.startsWith("d-")) return;
+  const base = slugify(title || "post") || "post";
+  await postsRepo.updatePost(id, { slug: `${post.serial ?? Date.now().toString(36)}-${base}` });
+}
+
+export async function publishAction(id: number): Promise<void> {
+  await requireAuthorOrRedirect();
+  const post = await postsRepo.getById(id);
+  await postsRepo.publishPost(id);
+  await ensureSlug(id, post?.title ?? "");
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/p/[slug]", "page");
+  redirect("/admin/posts");
+}
+
+export async function scheduleAction(id: number, whenIso: string): Promise<void> {
+  await requireAuthorOrRedirect();
+  const when = new Date(whenIso).getTime();
+  if (!Number.isFinite(when)) return;
+  const post = await postsRepo.getById(id);
+  await postsRepo.schedulePost(id, when);
+  await ensureSlug(id, post?.title ?? "");
+  revalidatePath("/admin");
+  revalidatePath("/p/[slug]", "page");
+  redirect("/admin/posts");
+}
+
+export async function submitForReviewAction(id: number): Promise<void> {
+  await requireAuthorOrRedirect();
+  await postsRepo.setStatus(id, "in_review");
+  revalidatePath("/admin");
+  redirect("/admin/posts");
+}
+
+export async function backToDraftAction(id: number): Promise<void> {
+  await requireAuthorOrRedirect();
+  await postsRepo.setStatus(id, "draft");
+  revalidatePath("/admin");
+}
+
+/** One action, always available. Being able to undo publishing makes publishing easier. */
+export async function unpublishAction(id: number): Promise<void> {
+  await requireAuthorOrRedirect();
+  await postsRepo.unpublish(id);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/p/[slug]", "page");
+}
+
+export async function deletePostAction(id: number): Promise<void> {
+  await requireAuthorOrRedirect();
+  await postsRepo.deletePost(id);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/p/[slug]", "page");
+  redirect("/admin/posts");
+}
+
+/** 返事 — any signed-in trusted reader may answer a post. */
+export async function addReplyAction(postId: number, body: string): Promise<void> {
+  const user = await requireUserOrRedirect();
+  const text = body.trim();
+  if (!text) return;
+  await addReply(postId, user.id, text);
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/p/[slug]", "page");
+}

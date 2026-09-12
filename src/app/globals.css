@@ -1,0 +1,471 @@
+/* ============================================================
+   Umeblog — design system
+   Values measured from mud.co.jp (the chosen reference), not guessed:
+     ground #F2F2F2 / ink #000000, container inset 40px (16px mobile),
+     body 18px / line-height 2.0 / letter-spacing 0.04em,
+     display 80px weight 600 line-height 1.0.
+   Japanese typography rules are enforced here, once, for the whole app.
+   ============================================================ */
+
+:root {
+  --ground: #f2f2f2;
+  --ink: #000000;
+  --ink-2: #333333;
+  --muted: #6b6b6b;
+  --faint: #9a9a9a;
+  --rule: #cfcfcf;
+  --rule-strong: #000000;
+  --surface: #ffffff;
+  --sunken: #e8e8e8;
+  /* Semantic, kept away from the (absent) accent hue. */
+  --ok: #1f6b3f;
+  --warn: #8a6a12;
+  --bad: #9a2a1c;
+
+  --inset: 40px;
+  --measure: 35em; /* ~35 Japanese characters — the JP line-length rule */
+
+  --f-latin: var(--font-public-sans), system-ui, -apple-system, sans-serif;
+  --f-jp: var(--font-zen-kaku), "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  --f-body: var(--font-public-sans), var(--font-zen-kaku), "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", Meiryo, system-ui, sans-serif;
+  --f-mono: var(--font-azeret), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0e0e0e;
+    --ink: #f2f2f2;
+    --ink-2: #d6d6d6;
+    --muted: #9a9a9a;
+    --faint: #6b6b6b;
+    --rule: #2e2e2e;
+    --rule-strong: #f2f2f2;
+    --surface: #161616;
+    --sunken: #1c1c1c;
+    --ok: #6fd096;
+    --warn: #e0bb55;
+    --bad: #e8836f;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0e0e0e;
+  --ink: #f2f2f2;
+  --ink-2: #d6d6d6;
+  --muted: #9a9a9a;
+  --faint: #6b6b6b;
+  --rule: #2e2e2e;
+  --rule-strong: #f2f2f2;
+  --surface: #161616;
+  --sunken: #1c1c1c;
+  --ok: #6fd096;
+  --warn: #e0bb55;
+  --bad: #e8836f;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 18px;
+  /* The two numbers the whole design rests on. */
+  line-height: 2;
+  letter-spacing: 0.04em;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "palt" 1;
+  /* 禁則処理 — keep JP punctuation off line starts, don't split Latin words. */
+  word-break: normal;
+  overflow-wrap: anywhere;
+  line-break: strict;
+}
+
+/* Japanese has no italics. Browsers synthesise an ugly oblique, so it is
+   banned app-wide; emphasis uses weight or 「」 instead. */
+i,
+em,
+address,
+cite,
+dfn,
+var {
+  font-style: normal;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--inset);
+}
+
+/* The signature: a 1px hairline frame, inset from the viewport.
+   On the reference this sits on the hero block and is what makes
+   the page read as matted rather than merely empty. */
+.frame {
+  border: 1px solid var(--rule-strong);
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+
+/* ── Type roles ───────────────────────────────────────────── */
+
+.display {
+  font-size: 80px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.section-head {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.nav-link {
+  font-family: var(--f-latin);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.serial {
+  font-family: var(--f-mono);
+  font-size: 32px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.kana-sub {
+  font-family: var(--f-jp);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+/* Body copy is capped at the JP measure wherever it appears. */
+.prose {
+  max-width: var(--measure);
+  line-height: 2;
+  letter-spacing: 0.04em;
+}
+.prose > * + * {
+  margin-top: 1.6em;
+}
+.prose h2 {
+  font-size: 1.4em;
+  margin-top: 2.4em;
+}
+.prose h3 {
+  font-size: 1.15em;
+  margin-top: 2em;
+}
+.prose blockquote {
+  margin: 2em 0;
+  padding-left: 1.2em;
+  border-left: 2px solid var(--rule-strong);
+  color: var(--ink-2);
+}
+.prose img {
+  width: 100%;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+}
+
+/* Shared controls live here, not in a route-scoped stylesheet: the admin and
+   the public site both use them, and a stylesheet imported by one route group
+   is not loaded for the other in a production build. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.6rem 1.4rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--ink);
+  color: var(--ground);
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border-radius: 0;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.btn:hover {
+  opacity: 0.82;
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+}
+.btn--wide {
+  width: 100%;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── Affiliate link card ──────────────────────────────────────
+   Shared between the editor's custom block and the public renderer, so it
+   lives in globals.css rather than public.css/admin.css. A bordered card,
+   not a colourful "buy now" banner — the Amazon badge is the only place
+   colour appears, everything else stays inside the site's own palette. */
+.affiliate-card {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  margin: 1.8rem 0;
+}
+.affiliate-card__image {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  background: var(--sunken);
+}
+.affiliate-card__image--empty {
+  border-right: 1px solid var(--rule);
+}
+.affiliate-card__body {
+  flex: 1;
+  min-width: 0;
+  /* Extra right padding clears the absolutely-positioned 編集 button in the
+     editor — harmless empty space on the public card, which has no button. */
+  padding: 0.9rem 3.2rem 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.affiliate-card__top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.affiliate-card__badge {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--rule);
+  padding: 2px 6px;
+  color: var(--muted);
+}
+.affiliate-card__badge--amazon {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.affiliate-card__pr {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ground);
+  background: var(--ink);
+  padding: 2px 6px;
+}
+.affiliate-card__title {
+  font-weight: 600;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.affiliate-card__price {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+.affiliate-card__cta {
+  align-self: flex-start;
+  margin-top: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--rule-strong);
+  padding: 0.35rem 0.9rem;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.affiliate-card__cta:hover {
+  background: var(--ink);
+  color: var(--ground);
+}
+.affiliate-card__edit {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 2px 8px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+/* ── Affiliate link form (editor only) ────────────────────── */
+.affiliate-form {
+  border: 1px solid var(--rule);
+  background: var(--sunken);
+  padding: 1rem;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.affiliate-form__label {
+  margin: 0;
+}
+.affiliate-form__row {
+  display: flex;
+  gap: 0.5rem;
+}
+.affiliate-form__network {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.affiliate-form__network.is-active {
+  border-color: var(--rule-strong);
+  color: var(--ink);
+  background: var(--ground);
+}
+.affiliate-form__input {
+  width: 100%;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 0.5rem 0.7rem;
+  font-size: 14px;
+}
+.affiliate-form__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --inset: 16px;
+  }
+  body {
+    font-size: 14px;
+    /* Still inside the 1.8–2.0 JP band. */
+    line-height: 1.8;
+  }
+  .display {
+    font-size: 48px;
+  }
+  .section-head {
+    font-size: 24px;
+  }
+  .nav-link {
+    font-size: 17px;
+  }
+  .serial {
+    font-size: 24px;
+  }
+  .affiliate-card__image {
+    width: 72px;
+    height: 72px;
+  }
+  .affiliate-card__body {
+    padding: 0.7rem 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,633 @@
+/* ── Admin ──────────────────────────────────────────────────
+   Japanese UI throughout — this is the screen she opens daily.
+   Same monochrome system as the public site.
+   ───────────────────────────────────────────────────────── */
+
+.admin {
+  min-height: 100vh;
+}
+
+.admin-bar {
+  border-bottom: 1px solid var(--rule);
+  position: sticky;
+  top: 0;
+  background: var(--ground);
+  z-index: 40;
+}
+.admin-bar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px var(--inset);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.admin-bar__logo {
+  font-family: var(--f-latin);
+  font-weight: 700;
+  font-size: 20px;
+  text-decoration: none;
+  line-height: 1;
+}
+.admin-bar__nav {
+  display: flex;
+  gap: 1.4rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.admin-bar__nav a {
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.admin-bar__nav a:hover {
+  text-decoration: underline;
+}
+.admin-bar__pending {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  background: var(--ink);
+  color: var(--ground);
+  padding: 1px 6px;
+  line-height: 1.6;
+}
+.admin-bar__logout {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 44px;
+  padding: 0;
+}
+.admin-bar__logout:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.admin-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px var(--inset) 96px;
+}
+
+/* ── Login ──────────────────────────────────────────────── */
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--inset);
+}
+.login-card {
+  width: min(420px, 100%);
+  padding: 40px;
+  background: var(--surface);
+}
+.login-title {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.login-form input {
+  background: var(--ground);
+  border: 1px solid var(--rule);
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0;
+  min-height: 44px;
+}
+.form-error {
+  color: var(--bad);
+  font-size: 13px;
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Dashboard ──────────────────────────────────────────── */
+
+/* The primary action. Deliberately larger than anything else on the page:
+   the research was clear that lowering the cost of starting matters more
+   than any amount of encouragement. */
+.write-cta {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 2.6rem 1.5rem;
+  border: 1px solid var(--rule-strong);
+  background: var(--ink);
+  color: var(--ground);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.write-cta:hover {
+  opacity: 0.86;
+}
+.write-cta__label {
+  display: block;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+.write-cta__sub {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 13px;
+  opacity: 0.72;
+  line-height: 1.8;
+}
+
+.greet {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 1.3rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.greet__title {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.6;
+  margin-bottom: 0.4rem;
+}
+.greet__body {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+@media (max-width: 900px) {
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 1.4rem 1.5rem 1.6rem;
+}
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+.panel__title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+/* Counters. Every figure here can only increase, or is a past record.
+   There is deliberately no current-streak number anywhere in this app. */
+.counters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.counter {
+  background: var(--surface);
+  padding: 1.1rem 1rem 1.2rem;
+}
+.counter__n {
+  font-family: var(--f-mono);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  display: block;
+}
+.counter__unit {
+  font-size: 13px;
+  color: var(--muted);
+  margin-left: 0.15rem;
+}
+.counter__label {
+  display: block;
+  margin-top: 0.4rem;
+}
+.counter__note {
+  display: block;
+  font-size: 10px;
+  color: var(--faint);
+  line-height: 1.7;
+  margin-top: 0.2rem;
+}
+@media (max-width: 700px) {
+  .counters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Year calendar. Written days are ink; blank days are simply pale.
+   Never red, never an X, never a number — a quiet day is not a failure. */
+.year {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.year__cell {
+  width: 11px;
+  height: 11px;
+  background: var(--sunken);
+  border-radius: 1px;
+}
+.year__cell--1 {
+  background: color-mix(in srgb, var(--ink) 45%, var(--sunken));
+}
+.year__cell--2 {
+  background: color-mix(in srgb, var(--ink) 75%, var(--sunken));
+}
+.year__cell--3 {
+  background: var(--ink);
+}
+.year__legend {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.reply-card__body {
+  font-size: 16px;
+  line-height: 1.95;
+  border-left: 2px solid var(--rule-strong);
+  padding-left: 1rem;
+  margin-bottom: 0.8rem;
+}
+.reply-card__meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.reply-card__empty {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.kou-card__name {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.kou-card__reading {
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+.kou-card__hint {
+  margin-top: 0.8rem;
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--ink-2);
+}
+
+/* ── Post list (admin) ──────────────────────────────────── */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.85rem 0.8rem;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+  line-height: 1.7;
+}
+.admin-table thead th {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+}
+.admin-table a {
+  font-weight: 700;
+  text-decoration: none;
+}
+.admin-table a:hover {
+  text-decoration: underline;
+}
+
+.status {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border: 1px solid var(--rule);
+  line-height: 1.8;
+  white-space: nowrap;
+}
+.status--published {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--ground);
+}
+.status--in_review {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.status--scheduled {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+.toolbar__spacer {
+  flex: 1;
+}
+
+.btn-sm {
+  min-height: 40px;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 0;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.btn-sm:hover {
+  border-color: var(--rule-strong);
+}
+.btn-sm--danger {
+  color: var(--bad);
+}
+
+.page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.4rem;
+}
+.page-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* ── Editor ─────────────────────────────────────────────── */
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.editor-main {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  min-width: 0;
+}
+.editor-fields {
+  padding: 1.2rem 1.4rem;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.editor-fields input {
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  background: transparent;
+  padding: 0.5rem 0;
+  border-radius: 0;
+}
+.editor-title-input {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.editor-lead-input {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.editor-body {
+  min-height: 420px;
+  padding: 0.5rem 0;
+}
+.editor-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 88px;
+}
+.side-panel {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 1rem 1.1rem 1.2rem;
+}
+.side-panel h3 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  line-height: 1.6;
+}
+.side-panel input[type="text"],
+.side-panel input[type="datetime-local"] {
+  width: 100%;
+  border: 1px solid var(--rule);
+  background: var(--ground);
+  padding: 0.55rem 0.7rem;
+  border-radius: 0;
+  min-height: 40px;
+  font-size: 13px;
+}
+.side-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.save-state {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  line-height: 1.8;
+}
+.simple-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 13px;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+/* Simple mode hides the block furniture rather than swapping in a second
+   editor — one code path, one set of IME behaviours to keep correct. */
+.editor-body--simple .bn-side-menu,
+.editor-body--simple .bn-block-outer .bn-drag-handle-menu,
+.editor-body--simple [data-test="dragHandle"],
+.editor-body--simple [data-test="dragHandleAdd"] {
+  display: none !important;
+}
+
+/* ── Comments queue ─────────────────────────────────────── */
+.queue-item {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 1.1rem 1.3rem 1.2rem;
+  margin-bottom: 0.7rem;
+}
+.queue-item__head {
+  display: flex;
+  gap: 0.8rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.queue-item__name {
+  font-weight: 700;
+  font-size: 14px;
+}
+.queue-item__body {
+  line-height: 1.9;
+  margin-bottom: 0.8rem;
+  font-size: 15px;
+}
+.queue-item__flag {
+  color: var(--bad);
+  font-size: 12px;
+  line-height: 1.8;
+  margin-bottom: 0.7rem;
+}
+.queue-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+.tabs a {
+  text-decoration: none;
+  font-size: 13px;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--rule);
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.tabs a[aria-current="true"] {
+  background: var(--ink);
+  color: var(--ground);
+  border-color: var(--ink);
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-width: 640px;
+}
+.settings-form input,
+.settings-form textarea {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 1rem;
+  border-radius: 0;
+  line-height: 1.8;
+  width: 100%;
+}
+.settings-form textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.9;
+  margin-bottom: 1.2rem;
+  max-width: 48em;
+}
+
+@media (max-width: 768px) {
+  .admin-main {
+    padding-top: 20px;
+  }
+  /* Anything tappable gets a thumb-sized target on a phone. */
+  .admin-bar__logo,
+  a.label {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .write-cta {
+    padding: 2rem 1rem;
+  }
+  .admin-table thead {
+    display: none;
+  }
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+  .admin-table tr {
+    border: 1px solid var(--rule);
+    margin-bottom: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--surface);
+  }
+  .admin-table td {
+    border: 0;
+    padding: 0.3rem 0;
+  }
+  .admin-table a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
