@@ -13,7 +13,7 @@ export default function LoginForm() {
       <label className="label" htmlFor="email">
         メールアドレス
       </label>
-      <input id="email" name="email" type="email" autoComplete="username" required />
+      <input id="email" name="email" type="text" autoComplete="username" required />
 
       <label className="label" htmlFor="password">
         パスワード
