@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { db, schema } from "@/lib/db";
-import { and, desc, eq, inArray, isNotNull, lte, max, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNotNull, lte, max, or, sql } from "drizzle-orm";
 
 const { posts, tags, postTags, images, replies } = schema;
 
@@ -104,6 +104,55 @@ export async function listByTag(tagSlug: string): Promise<PostWithMeta[]> {
     .where(and(eq(postTags.tagId, tag.id), visible()))
     .orderBy(desc(posts.publishedAt));
   return decorate(rows.map((r) => r.p));
+}
+
+/**
+ * Escapes ILIKE metacharacters so a reader-typed `%` or `_` matches itself
+ * instead of acting as a wildcard.
+ */
+function escapeLike(raw: string): string {
+  return raw.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
+/**
+ * Substring search across title, lead, body, and tag names.
+ *
+ * Postgres full-text search cannot segment Japanese without extensions Neon
+ * doesn't offer (pgroonga / pg_bigm), so this uses ILIKE — the right tool for
+ * CJK substring matching. `contentJson` is searched raw: BlockNote documents
+ * are plain `JSON.stringify` output, which leaves non-ASCII text literal, so
+ * Japanese body text matches directly (a query containing `"` or `\\` won't
+ * match body text, since JSON escapes those — an accepted limitation).
+ */
+export async function searchPublished(q: string, limit = 50): Promise<PostWithMeta[]> {
+  const trimmed = q.trim().slice(0, 80);
+  if (!trimmed) return [];
+  const pattern = `%${escapeLike(trimmed)}%`;
+
+  const taggedPostIds = db
+    .select({ postId: postTags.postId })
+    .from(postTags)
+    .innerJoin(tags, eq(tags.id, postTags.tagId))
+    .where(ilike(tags.name, pattern));
+
+  const rows = await db
+    .select()
+    .from(posts)
+    .where(
+      and(
+        visible(),
+        or(
+          ilike(posts.title, pattern),
+          ilike(posts.lead, pattern),
+          ilike(posts.contentJson, pattern),
+          inArray(posts.id, taggedPostIds),
+        ),
+      ),
+    )
+    .orderBy(desc(posts.publishedAt), desc(posts.id))
+    .limit(limit);
+
+  return decorate(rows);
 }
 
 /** Admin view — everything, any status. */

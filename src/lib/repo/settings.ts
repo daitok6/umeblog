@@ -7,6 +7,7 @@ export async function getSettings(): Promise<schema.SiteSettings> {
   const fallback = {
     id: 1,
     title: "うめ",
+    bannerTitle: "",
     tagline: "日々を綴るブログ",
     aboutMd: "",
   };

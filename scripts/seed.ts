@@ -135,6 +135,7 @@ async function main() {
   await db.insert(schema.siteSettings).values({
     id: 1,
     title: "うめ",
+    bannerTitle: "",
     tagline: "日々の記録",
     aboutMd:
       "毎日のことを書いています。ごはんと、さんぽと、天気のことが多いです。\n\nテーマは決めていません。決めないまま続けるつもりです。",

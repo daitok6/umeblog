@@ -16,7 +16,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <div className="public-shell">
-      <SiteHeader title={settings.title} />
+      <SiteHeader title={settings.bannerTitle || settings.title} />
       <main>{children}</main>
       <footer className="site-footer">
         <div className="container site-footer__inner">

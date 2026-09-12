@@ -131,6 +131,8 @@ export const loginAttempts = pgTable(
 export const siteSettings = pgTable("site_settings", {
   id: integer("id").primaryKey(),
   title: text("title").notNull().default("うめ"),
+  /** Header wordmark. Empty means "use `title`", so an untouched blog looks unchanged. */
+  bannerTitle: text("banner_title").notNull().default(""),
   tagline: text("tagline").notNull().default(""),
   aboutMd: text("about_md").notNull().default(""),
 });

@@ -15,6 +15,20 @@ export default async function SettingsPage() {
       </div>
 
       <form action={saveSettingsAction} className="settings-form">
+        <label className="label" htmlFor="bannerTitle">
+          バナー名
+        </label>
+        <input
+          id="bannerTitle"
+          name="bannerTitle"
+          defaultValue={s.bannerTitle}
+          maxLength={60}
+          placeholder={s.title}
+        />
+        <p className="label" style={{ marginTop: "-8px" }}>
+          空欄のときはサイト名を表示します
+        </p>
+
         <label className="label" htmlFor="title">
           サイト名
         </label>
