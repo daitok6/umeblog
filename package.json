@@ -1,0 +1,43 @@
+{
+  "name": "umeblog",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:push": "dotenv -e .env.local -- drizzle-kit push",
+    "db:seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
+    "db:reset": "pnpm db:push && pnpm db:seed",
+    "create-user": "dotenv -e .env.local -- tsx scripts/create-user.ts",
+    "pretest": "dotenv -e .env.local -- tsx scripts/seed-test-users.ts",
+    "test": "playwright test",
+    "posttest": "dotenv -e .env.local -- tsx scripts/cleanup-test-data.ts",
+    "test:ui": "playwright test --ui",
+    "test:cleanup": "dotenv -e .env.local -- tsx scripts/cleanup-test-data.ts"
+  },
+  "dependencies": {
+    "@blocknote/core": "^0.54.2",
+    "@blocknote/mantine": "^0.54.2",
+    "@blocknote/react": "^0.54.2",
+    "@neondatabase/serverless": "^1.0.2",
+    "@vercel/blob": "^2.0.0",
+    "drizzle-orm": "^0.45.2",
+    "jose": "^6.2.12",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sharp": "^0.35.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv-cli": "^7.4.2",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.13",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.33.2"
+}
