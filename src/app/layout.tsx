@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Public_Sans, Zen_Kaku_Gothic_New, Azeret_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { assertEnv } from "@/lib/env";
 import "./globals.css";
 
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ja">
       <body className={`${publicSans.variable} ${zenKaku.variable} ${azeret.variable}`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
