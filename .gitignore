@@ -1,0 +1,24 @@
+node_modules
+.next
+out
+build
+.DS_Store
+*.pem
+npm-debug.log*
+.env*
+!.env.example
+next-env.d.ts
+/data/
+/storage/
+test-results/
+playwright-report/
+.playwright-mcp/
+.vercel
+*.tsbuildinfo
+
+# Local tooling artifacts — agent skill caches, notes app config. Never
+# project source; regenerated locally, not meant to be shared via the repo.
+.agents/
+.claude/
+.obsidian/
+skills-lock.json

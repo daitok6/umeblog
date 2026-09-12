@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # dotenv-cli (used by pnpm scripts) expects .env.local to exist; CI
+      # supplies the same values via job-level env vars instead of the file.
+      - name: Write .env.local from secrets
+        run: |
+          cat > .env.local <<EOF
+          DATABASE_URL=${DATABASE_URL}
+          BLOB_READ_WRITE_TOKEN=${BLOB_READ_WRITE_TOKEN}
+          SESSION_SECRET=${SESSION_SECRET}
+          NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+          EOF
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run tests
+        run: pnpm test
+
+      # Always runs, including when the test step above fails — CI shares
+      # the real database with local dev and production (no separate test
+      # database), so a failed run must not leave test data behind either.
+      - name: Clean up test data
+        if: always()
+        run: pnpm test:cleanup
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
