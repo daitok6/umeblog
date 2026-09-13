@@ -138,3 +138,198 @@ test.describe("editorial ideas", () => {
     await expect(page.getByText("条件に合うアイデアが見つかりませんでした。")).toBeVisible();
   });
 });
+
+/**
+ * One content idea, several platform-specific expressions of it. Each helper
+ * reloads the ticket page before opening the "add" form so its `<details>`
+ * always starts closed — a click always opens it, never toggles it shut.
+ */
+test.describe("platform deliverables", () => {
+  async function addDeliverable(
+    page: import("@playwright/test").Page,
+    ticketUrl: string,
+    opts: { platform: string; workingTitle: string; status?: string },
+  ) {
+    await page.goto(ticketUrl);
+    const add = page.getByTestId("add-platform-deliverable");
+    await add.locator(":scope > summary").click();
+    await add.locator('select[name="platform"]').selectOption(opts.platform);
+    await add.locator('input[name="workingTitle"]').fill(opts.workingTitle);
+    if (opts.status) {
+      await add.locator('select[name="status"]').selectOption(opts.status);
+    }
+    await add.locator('button[type="submit"]').click();
+    await expect(rowFor(page, opts.workingTitle)).toBeVisible();
+  }
+
+  // Matches on the row's own title line (`.ticket-detail__desc`), not just
+  // any text inside the row — another deliverable's "based on" dropdown can
+  // list this same title as an <option>, which would otherwise match too.
+  function rowFor(page: import("@playwright/test").Page, workingTitle: string) {
+    return page
+      .locator('[data-testid^="deliverable-row-"]')
+      .filter({ has: page.locator(".ticket-detail__desc", { hasText: workingTitle }) });
+  }
+
+  test("one idea carries three platform deliverables with independent statuses that persist", async ({
+    page,
+  }) => {
+    await login(page);
+    const marker = `複数プラットフォーム-${Date.now()}`;
+
+    await page.goto("/admin/tickets/new");
+    await page.locator("#tk-title").fill(marker);
+    await page.locator("button[type=submit]", { hasText: "アイデアを追加" }).click();
+    await page.waitForURL(/\/admin\/tickets\/\d+$/);
+    const ticketUrl = page.url();
+
+    const igTitle = `${marker}-IG`;
+    const noteTitle = `${marker}-note`;
+    const blogTitle = `${marker}-blog`;
+
+    await addDeliverable(page, ticketUrl, { platform: "instagram", workingTitle: igTitle, status: "idea" });
+    await addDeliverable(page, ticketUrl, { platform: "note", workingTitle: noteTitle, status: "interested" });
+    await addDeliverable(page, ticketUrl, { platform: "blog", workingTitle: blogTitle, status: "selected" });
+
+    await page.reload();
+    await expect(rowFor(page, igTitle)).toContainText("アイデア");
+    await expect(rowFor(page, noteTitle)).toContainText("気になる");
+    await expect(rowFor(page, blogTitle)).toContainText("つくりたい");
+
+    // The parent shows an aggregate too, computed from the three of them.
+    await expect(page.locator(".ticket-aggregate").first()).toContainText("つくりたい");
+  });
+
+  test("one platform can move to published with a URL while another idea stays untouched", async ({
+    page,
+  }) => {
+    await login(page);
+    const marker = `一部公開-${Date.now()}`;
+
+    await page.goto("/admin/tickets/new");
+    await page.locator("#tk-title").fill(marker);
+    await page.locator("button[type=submit]", { hasText: "アイデアを追加" }).click();
+    await page.waitForURL(/\/admin\/tickets\/\d+$/);
+    const ticketUrl = page.url();
+
+    const igTitle = `${marker}-IG`;
+    const blogTitle = `${marker}-blog`;
+    await addDeliverable(page, ticketUrl, { platform: "instagram", workingTitle: igTitle, status: "idea" });
+    await addDeliverable(page, ticketUrl, { platform: "blog", workingTitle: blogTitle, status: "idea" });
+
+    await page.goto(ticketUrl);
+    const igRow = rowFor(page, igTitle);
+    await igRow.locator(":scope > summary").click();
+    await igRow.locator("button", { hasText: "制作中にする" }).click();
+    await expect(igRow).toContainText("制作中");
+
+    // Record a published URL through the row's own edit form, alongside
+    // flipping its status — a manual field, unlike blog's derived one.
+    await igRow.locator('summary:has-text("こまかい設定")').click();
+    await igRow.locator('input[name="publishedUrl"]').fill("https://instagram.com/p/example");
+    await igRow.locator('select[name="status"]').selectOption("published");
+    await igRow.locator('button[type="submit"]', { hasText: "保存する" }).click();
+    await expect(igRow).toContainText("公開済み");
+    await expect(igRow.locator('a[href="https://instagram.com/p/example"]')).toBeVisible();
+
+    // Blog was never touched, so it's still just an idea.
+    const blogRow = rowFor(page, blogTitle);
+    await expect(blogRow).toContainText("アイデア");
+
+    // The parent shows partial progress, not "done".
+    await expect(page.locator(".ticket-aggregate").first()).toContainText("一部公開");
+  });
+
+  test("a blog deliverable creates a linked post and opens it from the idea", async ({ page }) => {
+    await login(page);
+    const marker = `ブログ版-${Date.now()}`;
+
+    await page.goto("/admin/tickets/new");
+    await page.locator("#tk-title").fill(marker);
+    await page.locator("button[type=submit]", { hasText: "アイデアを追加" }).click();
+    await page.waitForURL(/\/admin\/tickets\/\d+$/);
+    const ticketUrl = page.url();
+
+    const blogTitle = `${marker}-blog`;
+    await addDeliverable(page, ticketUrl, { platform: "blog", workingTitle: blogTitle });
+
+    await page.goto(ticketUrl);
+    const blogRow = rowFor(page, blogTitle);
+    await blogRow.locator(":scope > summary").click();
+    await blogRow.locator("button", { hasText: "この案でブログを書きはじめる" }).click();
+
+    await page.waitForURL(/\/admin\/posts\/\d+$/);
+    await expect(page.getByTestId("title-input")).toHaveValue(blogTitle);
+
+    await page.goto(ticketUrl);
+    const linkedRow = rowFor(page, blogTitle);
+    await linkedRow.locator(":scope > summary").click();
+    await expect(linkedRow).toContainText("ひもづく記事");
+    await expect(linkedRow).toContainText("制作中");
+  });
+
+  test("a single-platform idea publishes without needing note or blog versions", async ({ page }) => {
+    await login(page);
+    const marker = `単一プラットフォーム-${Date.now()}`;
+
+    await page.goto("/admin/tickets/new");
+    await page.locator("#tk-title").fill(marker);
+    await page.locator("button[type=submit]", { hasText: "アイデアを追加" }).click();
+    await page.waitForURL(/\/admin\/tickets\/\d+$/);
+    const ticketUrl = page.url();
+
+    const igTitle = `${marker}-IG`;
+    await addDeliverable(page, ticketUrl, { platform: "instagram", workingTitle: igTitle });
+
+    await page.goto(ticketUrl);
+    const igRow = rowFor(page, igTitle);
+    await igRow.locator(":scope > summary").click();
+    await igRow.locator("button", { hasText: "公開した" }).click();
+    await expect(igRow).toContainText("公開済み");
+
+    // Nothing on the page demands a note or blog version.
+    await expect(page.locator(".ticket-aggregate").first()).toContainText("ひととおり完了");
+  });
+
+  test("filtering by platform, deliverable status, and cross-platform potential", async ({ page }) => {
+    await login(page);
+    const marker = `絞り込み-${Date.now()}`;
+
+    await page.goto("/admin/tickets/new");
+    await page.locator("#tk-title").fill(marker);
+    await page.locator("summary", { hasText: "手ごたえと時期" }).click();
+    await page.locator("#tk-cross").selectOption("high");
+    await page.locator("button[type=submit]", { hasText: "アイデアを追加" }).click();
+    await page.waitForURL(/\/admin\/tickets\/\d+$/);
+    const ticketUrl = page.url();
+
+    const blogTitle = `${marker}-blog`;
+    await addDeliverable(page, ticketUrl, { platform: "blog", workingTitle: blogTitle, status: "in_progress" });
+
+    await page.goto(`/admin/tickets?plan=with&platform=blog&scope=all`);
+    await expect(page.getByText(marker, { exact: false }).first()).toBeVisible();
+
+    await page.goto(`/admin/tickets?platform=blog&dstatus=in_progress&scope=all`);
+    await expect(page.getByText(marker, { exact: false }).first()).toBeVisible();
+
+    await page.goto(`/admin/tickets?cross=high&scope=all`);
+    await expect(page.getByText(marker, { exact: false }).first()).toBeVisible();
+
+    await page.goto(`/admin/tickets?platform=note&scope=all&q=${encodeURIComponent(marker)}`);
+    await expect(page.getByText("条件に合うアイデアが見つかりませんでした。")).toBeVisible();
+  });
+
+  test("an idea with no deliverables still shows its stored status unchanged", async ({ page }) => {
+    await login(page);
+    const marker = `プランなし-${Date.now()}`;
+
+    await page.goto("/admin/tickets/new");
+    await page.locator("#tk-title").fill(marker);
+    await page.locator("button[type=submit]", { hasText: "アイデアを追加" }).click();
+    await page.waitForURL(/\/admin\/tickets\/\d+$/);
+
+    await expect(page.locator(".ticket-detail__head .status")).toHaveText("アイデア");
+    await expect(page.locator(".ticket-aggregate")).toHaveCount(0);
+    await expect(page.getByText("まだプラットフォームは決めていません")).toBeVisible();
+  });
+});

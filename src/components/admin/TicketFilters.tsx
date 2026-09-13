@@ -2,6 +2,14 @@
 
 import { isComposingEvent } from "@/lib/ime";
 import { PILLAR_LABEL, PILLARS, PRIORITY_LABEL, PRIORITIES, TOPIC_TYPES, TYPE_LABEL } from "@/lib/tickets";
+import {
+  DELIVERABLE_STATUS_LABEL,
+  DELIVERABLE_STATUSES,
+  PLATFORM_LABEL,
+  PLATFORMS,
+  ROLE_LABEL,
+  CONTENT_ROLES,
+} from "@/lib/deliverables";
 
 /**
  * A plain GET form — works without JavaScript, matches the existing
@@ -19,6 +27,11 @@ export default function TicketFilters({
   seasonal,
   q,
   tagOptions,
+  platform,
+  deliverableStatus,
+  role,
+  plan,
+  crossPlatform,
 }: {
   view: string;
   scope: string;
@@ -30,6 +43,12 @@ export default function TicketFilters({
   seasonal: boolean;
   q: string;
   tagOptions: string[];
+  platform: string;
+  deliverableStatus: string;
+  role: string;
+  /** "" | "with" | "without" */
+  plan: string;
+  crossPlatform: string;
 }) {
   return (
     <form method="get" className="ticket-filters" role="search">
@@ -109,6 +128,61 @@ export default function TicketFilters({
         <input type="checkbox" name="seasonal" value="1" defaultChecked={seasonal} />
         季節もの
       </label>
+
+      <label className="visually-hidden" htmlFor="tf-platform">
+        プラットフォーム
+      </label>
+      <select id="tf-platform" name="platform" defaultValue={platform}>
+        <option value="">プラットフォーム：すべて</option>
+        {PLATFORMS.map((p) => (
+          <option key={p} value={p}>
+            {PLATFORM_LABEL[p]}
+          </option>
+        ))}
+      </select>
+
+      <label className="visually-hidden" htmlFor="tf-dstatus">
+        プラットフォームの状態
+      </label>
+      <select id="tf-dstatus" name="dstatus" defaultValue={deliverableStatus}>
+        <option value="">状態：すべて</option>
+        {DELIVERABLE_STATUSES.map((s) => (
+          <option key={s} value={s}>
+            {DELIVERABLE_STATUS_LABEL[s]}
+          </option>
+        ))}
+      </select>
+
+      <label className="visually-hidden" htmlFor="tf-role">
+        役割
+      </label>
+      <select id="tf-role" name="role" defaultValue={role}>
+        <option value="">役割：すべて</option>
+        {CONTENT_ROLES.map((r) => (
+          <option key={r} value={r}>
+            {ROLE_LABEL[r]}
+          </option>
+        ))}
+      </select>
+
+      <label className="visually-hidden" htmlFor="tf-plan">
+        プラットフォーム計画
+      </label>
+      <select id="tf-plan" name="plan" defaultValue={plan}>
+        <option value="">計画：すべて</option>
+        <option value="with">プランあり</option>
+        <option value="without">プランなし</option>
+      </select>
+
+      <label className="visually-hidden" htmlFor="tf-cross">
+        展開しやすさ
+      </label>
+      <select id="tf-cross" name="cross" defaultValue={crossPlatform}>
+        <option value="">展開しやすさ：すべて</option>
+        <option value="high">大</option>
+        <option value="medium">中</option>
+        <option value="low">小</option>
+      </select>
 
       <button type="submit" className="btn-sm">
         絞り込む

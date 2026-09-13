@@ -9,6 +9,7 @@
     "db:push": "dotenv -e .env.local -- drizzle-kit push",
     "db:seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
     "db:reset": "pnpm db:push && pnpm db:seed",
+    "db:backfill-deliverables": "dotenv -e .env.local -- tsx scripts/backfill-deliverables.ts",
     "create-user": "dotenv -e .env.local -- tsx scripts/create-user.ts",
     "pretest": "dotenv -e .env.local -- tsx scripts/seed-test-users.ts",
     "test": "playwright test",

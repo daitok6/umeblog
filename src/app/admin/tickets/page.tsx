@@ -4,7 +4,8 @@ import * as ticketsRepo from "@/lib/repo/tickets";
 import TicketCard from "@/components/admin/TicketCard";
 import TicketBoard from "@/components/admin/TicketBoard";
 import TicketFilters from "@/components/admin/TicketFilters";
-import { isPillar, isPriority, isStatus, isTopicType } from "@/lib/tickets";
+import { isPillar, isPriority, isStatus, isTopicType, isSignalLevel } from "@/lib/tickets";
+import { isPlatform, isDeliverableStatus, isContentRole } from "@/lib/deliverables";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,11 @@ type SP = {
   evergreen?: string;
   seasonal?: string;
   q?: string;
+  platform?: string;
+  dstatus?: string;
+  role?: string;
+  plan?: string;
+  cross?: string;
 };
 
 /** Preserves every filter param except the ones a tab link overrides. */
@@ -50,6 +56,11 @@ export default async function TicketsPage({ searchParams }: { searchParams: Prom
     evergreen: sp.evergreen === "1",
     seasonal: sp.seasonal === "1",
     q: sp.q,
+    ...(isPlatform(sp.platform) ? { platform: sp.platform } : {}),
+    ...(isDeliverableStatus(sp.dstatus) ? { deliverableStatus: sp.dstatus } : {}),
+    ...(isContentRole(sp.role) && sp.role !== "none" ? { role: sp.role } : {}),
+    ...(sp.plan === "with" || sp.plan === "without" ? { plan: sp.plan } : {}),
+    ...(isSignalLevel(sp.cross) && sp.cross !== "none" ? { crossPlatform: sp.cross } : {}),
   };
 
   const [tickets, tagOptions] = await Promise.all([
@@ -58,7 +69,18 @@ export default async function TicketsPage({ searchParams }: { searchParams: Prom
   ]);
 
   const hasFilters = Boolean(
-    sp.pillar || sp.topicType || sp.priority || sp.tag || sp.evergreen || sp.seasonal || sp.q,
+    sp.pillar ||
+      sp.topicType ||
+      sp.priority ||
+      sp.tag ||
+      sp.evergreen ||
+      sp.seasonal ||
+      sp.q ||
+      sp.platform ||
+      sp.dstatus ||
+      sp.role ||
+      sp.plan ||
+      sp.cross,
   );
 
   return (
@@ -101,6 +123,21 @@ export default async function TicketsPage({ searchParams }: { searchParams: Prom
         </Link>
       </div>
 
+      <div className="tabs tabs--platform">
+        <Link href={tabHref(sp, { platform: undefined })} aria-current={!sp.platform}>
+          すべて
+        </Link>
+        <Link href={tabHref(sp, { platform: "instagram" })} aria-current={sp.platform === "instagram"}>
+          Instagram
+        </Link>
+        <Link href={tabHref(sp, { platform: "note" })} aria-current={sp.platform === "note"}>
+          note
+        </Link>
+        <Link href={tabHref(sp, { platform: "blog" })} aria-current={sp.platform === "blog"}>
+          ブログ
+        </Link>
+      </div>
+
       <TicketFilters
         view={view}
         scope={scope}
@@ -112,6 +149,11 @@ export default async function TicketsPage({ searchParams }: { searchParams: Prom
         seasonal={sp.seasonal === "1"}
         q={sp.q ?? ""}
         tagOptions={tagOptions}
+        platform={sp.platform ?? ""}
+        deliverableStatus={sp.dstatus ?? ""}
+        role={sp.role ?? ""}
+        plan={sp.plan ?? ""}
+        crossPlatform={sp.cross ?? ""}
       />
 
       {tickets.length === 0 ? (

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { TicketWithMeta } from "@/lib/repo/tickets";
 import { PillarBadge, PriorityMark, TicketStatusBadge, TypeBadge } from "@/components/admin/TicketBadges";
+import PlatformSummary from "@/components/admin/PlatformSummary";
+import { crossPlatformLabel } from "@/lib/deliverables";
 
 function fmt(ms: number): string {
   const d = new Date(ms);
@@ -37,11 +39,15 @@ export default function TicketCard({ ticket }: { ticket: TicketWithMeta }) {
           ))}
         </p>
       ) : null}
+      <PlatformSummary deliverables={ticket.deliverables} />
       <div className="ticket-card__foot">
         <span className="label">{fmt(ticket.createdAt)}</span>
         {ticket.evergreen ? <span className="label">定番</span> : null}
         {ticket.seasonal ? <span className="label">季節もの</span> : null}
         {hasSignal ? <span className="label">手ごたえあり</span> : null}
+        {crossPlatformLabel(ticket.crossPlatformPotential) ? (
+          <span className="label">展開しやすさ {crossPlatformLabel(ticket.crossPlatformPotential)}</span>
+        ) : null}
       </div>
     </Link>
   );

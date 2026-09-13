@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { TicketWithMeta } from "@/lib/repo/tickets";
 import { BOARD_STATUSES, STATUS_LABEL } from "@/lib/tickets";
 import { PillarBadge, PriorityMark } from "@/components/admin/TicketBadges";
+import PlatformSummary from "@/components/admin/PlatformSummary";
 
 /**
  * A lightweight status board — CSS grid columns, no drag-and-drop. Moving a
@@ -35,6 +36,7 @@ export default function TicketBoard({ tickets }: { tickets: TicketWithMeta[] }) 
                       <PillarBadge pillar={t.pillar} />
                       <PriorityMark priority={t.priority} />
                     </div>
+                    <PlatformSummary deliverables={t.deliverables} emptyHint="" />
                   </Link>
                 ))
               )}

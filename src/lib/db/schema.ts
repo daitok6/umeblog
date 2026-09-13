@@ -7,6 +7,7 @@ import {
   primaryKey,
   index,
   uniqueIndex,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -297,6 +298,12 @@ export const tickets = pgTable(
     socialPotential: text("social_potential", { enum: ["none", "low", "medium", "high"] })
       .notNull()
       .default("none"),
+    /** Informational only — never used to auto-create deliverables. */
+    crossPlatformPotential: text("cross_platform_potential", {
+      enum: ["none", "low", "medium", "high"],
+    })
+      .notNull()
+      .default("none"),
     evergreen: boolean("evergreen").notNull().default(false),
     seasonal: boolean("seasonal").notNull().default(false),
     /** A hint, not a deadline — day granularity, rendered as "◯月ごろ". */
@@ -331,6 +338,69 @@ export const ticketTags = pgTable(
   (t) => [primaryKey({ columns: [t.ticketId, t.tagId] })],
 );
 
+/**
+ * A platform-specific expression of a content idea. An idea can have none,
+ * one, or several of these — skipping one is an ordinary outcome, not a
+ * failure (the status list below says so out loud: "今回はやらない").
+ */
+export const ticketDeliverables = pgTable(
+  "ticket_deliverables",
+  {
+    id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+    ticketId: integer("ticket_id")
+      .notNull()
+      .references(() => tickets.id, { onDelete: "cascade" }),
+    platform: text("platform", { enum: ["instagram", "note", "blog"] })
+      .notNull()
+      .default("blog"),
+    /** Freeform on purpose — the UI suggests per-platform formats, never limits them. */
+    format: text("format").notNull().default(""),
+    role: text("role", {
+      enum: ["none", "discovery", "connection", "utility", "conversion"],
+    })
+      .notNull()
+      .default("none"),
+    workingTitle: text("working_title").notNull().default(""),
+    angle: text("angle").notNull().default(""),
+    notes: text("notes").notNull().default(""),
+    status: text("status", {
+      enum: [
+        "idea",
+        "interested",
+        "selected",
+        "in_progress",
+        "draft_ready",
+        "published",
+        "skipped",
+        "archived",
+      ],
+    })
+      .notNull()
+      .default("idea"),
+    /** A hint, not a deadline — same spirit as tickets.targetPublishDate. */
+    targetPublishDate: bigint("target_publish_date", { mode: "number" }),
+    publishedAt: bigint("published_at", { mode: "number" }),
+    /** Manual for instagram/note. Blog derives its URL from the linked post instead. */
+    publishedUrl: text("published_url").notNull().default(""),
+    /** Platform-shaped JSON, stored as text (same pattern as posts.contentJson). */
+    metadataJson: text("metadata_json").notNull().default("{}"),
+    /** set null, not cascade — deleting the post must never delete the plan for it. */
+    linkedPostId: integer("linked_post_id").references(() => posts.id, { onDelete: "set null" }),
+    /** Optional self-reference: "expanded from" / "inspired by" another deliverable. */
+    sourceDeliverableId: integer("source_deliverable_id").references(
+      (): AnyPgColumn => ticketDeliverables.id,
+      { onDelete: "set null" },
+    ),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+    updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
+  },
+  (t) => [
+    index("ticket_deliverables_ticket_idx").on(t.ticketId),
+    index("ticket_deliverables_status_idx").on(t.status),
+    index("ticket_deliverables_platform_idx").on(t.platform),
+  ],
+);
+
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -345,3 +415,5 @@ export type ShortLink = typeof shortLinks.$inferSelect;
 export type NewShortLink = typeof shortLinks.$inferInsert;
 export type Ticket = typeof tickets.$inferSelect;
 export type NewTicket = typeof tickets.$inferInsert;
+export type TicketDeliverable = typeof ticketDeliverables.$inferSelect;
+export type NewTicketDeliverable = typeof ticketDeliverables.$inferInsert;

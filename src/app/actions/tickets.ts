@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAuthorOrRedirect } from "@/lib/auth/session";
 import * as ticketsRepo from "@/lib/repo/tickets";
 import * as postsRepo from "@/lib/repo/posts";
+import * as deliverablesRepo from "@/lib/repo/deliverables";
 import { setPostTags } from "@/lib/repo/tags";
 import {
   parseQuestions,
@@ -64,6 +65,7 @@ export async function saveTicketAction(
     seoPotential: toSignalLevel(formData.get("seoPotential")),
     monetizationPotential: toSignalLevel(formData.get("monetizationPotential")),
     socialPotential: toSignalLevel(formData.get("socialPotential")),
+    crossPlatformPotential: toSignalLevel(formData.get("crossPlatformPotential")),
     evergreen: formData.get("evergreen") === "on",
     seasonal: formData.get("seasonal") === "on",
     targetPublishDate: parseTargetDate(String(formData.get("targetPublishDate") ?? "")),
@@ -105,6 +107,10 @@ export async function deleteTicketAction(id: number): Promise<void> {
  * Carries the title and tags into a fresh draft — nothing else. Internal
  * planning notes (inspiration, questions, creative ideas, the three signals)
  * are deliberately left out of the public-facing post.
+ *
+ * Also creates (or reuses) a BLOG platform deliverable and links it to the
+ * new post, so the idea's platform plan and its single `linkedPostId` stay
+ * in sync — one button, one coherent model.
  */
 export async function createPostFromTicketAction(id: number): Promise<void> {
   const user = await requireAuthorOrRedirect();
@@ -118,6 +124,27 @@ export async function createPostFromTicketAction(id: number): Promise<void> {
   }
   await ticketsRepo.linkPost(id, postId);
   await ticketsRepo.setStatus(id, "in_progress");
+
+  const existingBlog = ticket.deliverables.find((d) => d.platform === "blog" && !d.linkedPostId);
+  if (existingBlog) {
+    await deliverablesRepo.linkPost(existingBlog.id, postId);
+    await deliverablesRepo.setStatus(existingBlog.id, "in_progress");
+  } else if (!ticket.deliverables.some((d) => d.platform === "blog")) {
+    const deliverableId = await deliverablesRepo.create(id, {
+      platform: "blog",
+      format: "",
+      role: "utility",
+      workingTitle: ticket.title,
+      angle: "",
+      notes: "",
+      status: "in_progress",
+      targetPublishDate: null,
+      publishedUrl: "",
+      metadataJson: "{}",
+      sourceDeliverableId: null,
+    });
+    await deliverablesRepo.linkPost(deliverableId, postId);
+  }
 
   revalidatePath("/admin/tickets");
   revalidatePath(`/admin/tickets/${id}`);

@@ -164,6 +164,20 @@ export default function TicketForm({ ticket }: { ticket?: TicketWithMeta }) {
               ))}
             </select>
           </div>
+          <div>
+            <label htmlFor="tk-cross">展開しやすさ</label>
+            <select
+              id="tk-cross"
+              name="crossPlatformPotential"
+              defaultValue={ticket?.crossPlatformPotential ?? "none"}
+            >
+              {SIGNAL_LEVELS.map((s) => (
+                <option key={s} value={s}>
+                  {SIGNAL_LABEL[s] ?? "未設定"}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <label className="ticket-form__check">

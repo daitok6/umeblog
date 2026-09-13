@@ -1,10 +1,12 @@
 import { db, schema } from "@/lib/db";
-import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, notInArray, or } from "drizzle-orm";
 import { escapeLike } from "@/lib/repo/posts";
 import { ensureTag } from "@/lib/repo/tags";
 import { ACTIVE_STATUSES, type TicketStatus } from "@/lib/tickets";
+import * as deliverablesRepo from "@/lib/repo/deliverables";
+import type { ContentRole, DeliverableStatus, Platform } from "@/lib/deliverables";
 
-const { tickets, ticketTags, tags, posts } = schema;
+const { tickets, ticketTags, tags, posts, ticketDeliverables } = schema;
 
 export type TicketWithMeta = schema.Ticket & {
   tags: schema.Tag[];
@@ -15,6 +17,7 @@ export type TicketWithMeta = schema.Ticket & {
     status: schema.Post["status"];
     serial: number | null;
   } | null;
+  deliverables: schema.TicketDeliverable[];
 };
 
 async function decorate(rows: schema.Ticket[]): Promise<TicketWithMeta[]> {
@@ -41,10 +44,13 @@ async function decorate(rows: schema.Ticket[]): Promise<TicketWithMeta[]> {
         .where(inArray(posts.id, postIds))
     : [];
 
+  const deliverableRows = await deliverablesRepo.listForTickets(ids);
+
   return rows.map((r) => ({
     ...r,
     tags: tagRows.filter((t) => t.ticketId === r.id).map((t) => t.tag),
     linkedPost: postRows.find((p) => p.id === r.linkedPostId) ?? null,
+    deliverables: deliverableRows.filter((d) => d.ticketId === r.id),
   }));
 }
 
@@ -59,6 +65,12 @@ export type TicketFilters = {
   q?: string;
   /** "active" (default) hides published/archived; "all" shows everything. */
   scope?: "active" | "all";
+  platform?: Platform;
+  deliverableStatus?: DeliverableStatus;
+  role?: ContentRole;
+  /** "with" -> has at least one deliverable; "without" -> has none. */
+  plan?: "with" | "without";
+  crossPlatform?: schema.Ticket["crossPlatformPotential"];
 };
 
 export async function list(filters: TicketFilters = {}): Promise<TicketWithMeta[]> {
@@ -74,6 +86,7 @@ export async function list(filters: TicketFilters = {}): Promise<TicketWithMeta[
   if (filters.priority) conds.push(eq(tickets.priority, filters.priority));
   if (filters.evergreen) conds.push(eq(tickets.evergreen, true));
   if (filters.seasonal) conds.push(eq(tickets.seasonal, true));
+  if (filters.crossPlatform) conds.push(eq(tickets.crossPlatformPotential, filters.crossPlatform));
 
   if (filters.q?.trim()) {
     const pattern = `%${escapeLike(filters.q.trim().slice(0, 80))}%`;
@@ -94,6 +107,28 @@ export async function list(filters: TicketFilters = {}): Promise<TicketWithMeta[
       .innerJoin(tags, eq(tags.id, ticketTags.tagId))
       .where(eq(tags.name, filters.tag.trim()));
     conds.push(inArray(tickets.id, taggedIds));
+  }
+
+  // platform / deliverableStatus / role compose into one subquery so
+  // "Instagram + in_progress" matches the SAME deliverable, not two
+  // unrelated ones on the same ticket.
+  if (filters.platform || filters.deliverableStatus || filters.role) {
+    const dConds = [];
+    if (filters.platform) dConds.push(eq(ticketDeliverables.platform, filters.platform));
+    if (filters.deliverableStatus) dConds.push(eq(ticketDeliverables.status, filters.deliverableStatus));
+    if (filters.role) dConds.push(eq(ticketDeliverables.role, filters.role));
+    const matchingIds = db
+      .select({ ticketId: ticketDeliverables.ticketId })
+      .from(ticketDeliverables)
+      .where(and(...dConds));
+    conds.push(inArray(tickets.id, matchingIds));
+  }
+
+  if (filters.plan) {
+    const anyDeliverable = db.select({ ticketId: ticketDeliverables.ticketId }).from(ticketDeliverables);
+    conds.push(
+      filters.plan === "with" ? inArray(tickets.id, anyDeliverable) : notInArray(tickets.id, anyDeliverable),
+    );
   }
 
   const rows = await db
@@ -137,6 +172,7 @@ export type TicketInput = {
   seoPotential: schema.Ticket["seoPotential"];
   monetizationPotential: schema.Ticket["monetizationPotential"];
   socialPotential: schema.Ticket["socialPotential"];
+  crossPlatformPotential: schema.Ticket["crossPlatformPotential"];
   evergreen: boolean;
   seasonal: boolean;
   targetPublishDate: number | null;
@@ -208,12 +244,16 @@ export async function unlinkPost(ticketId: number): Promise<void> {
   await db.update(tickets).set({ linkedPostId: null, updatedAt: Date.now() }).where(eq(tickets.id, ticketId));
 }
 
-/** Called when a linked post publishes, so its idea's status follows along. */
+/**
+ * Called when a linked post publishes, so both the idea's stored status and
+ * its matching blog deliverable (if any) follow along.
+ */
 export async function markPublishedForPost(postId: number): Promise<void> {
   await db
     .update(tickets)
     .set({ status: "published", updatedAt: Date.now() })
     .where(eq(tickets.linkedPostId, postId));
+  await deliverablesRepo.markPublishedForPost(postId);
 }
 
 /** Distinct tag names currently used on any ticket, for the filter select. */

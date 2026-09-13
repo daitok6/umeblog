@@ -127,6 +127,7 @@ async function main() {
   await db.delete(schema.comments);
   await db.delete(schema.posts);
   await db.delete(schema.ticketTags);
+  await db.delete(schema.ticketDeliverables);
   await db.delete(schema.tickets);
   await db.delete(schema.tags);
   await db.delete(schema.images);
@@ -304,6 +305,7 @@ async function main() {
     seoPotential: schema.Ticket["seoPotential"];
     monetizationPotential: schema.Ticket["monetizationPotential"];
     socialPotential: schema.Ticket["socialPotential"];
+    crossPlatformPotential?: schema.Ticket["crossPlatformPotential"];
     evergreen: boolean;
     seasonal: boolean;
     tags: string[];
@@ -321,6 +323,7 @@ async function main() {
       seoPotential: "low",
       monetizationPotential: "none",
       socialPotential: "medium",
+      crossPlatformPotential: "high",
       evergreen: false,
       seasonal: true,
       tags: ["日々", "マレーシア"],
@@ -447,12 +450,14 @@ async function main() {
   ];
 
   let ticketCount = 0;
+  const ticketIdByTitle = new Map<string, number>();
   for (const seed of TICKET_SEEDS) {
     const { tags: tagNames, ...rest } = seed;
     const [row] = await db
       .insert(schema.tickets)
       .values({ ...rest, createdById: author.id, createdAt: now, updatedAt: now })
       .returning({ id: schema.tickets.id });
+    ticketIdByTitle.set(seed.title, row.id);
     for (const name of tagNames) {
       const tagId = await ensureTag(name);
       await db.insert(schema.ticketTags).values({ ticketId: row.id, tagId }).onConflictDoNothing();
@@ -460,9 +465,64 @@ async function main() {
     ticketCount++;
   }
 
+  // A small platform plan on the one HIGH cross-platform idea, so the
+  // feature is visible without any manual setup on a fresh dev database.
+  const malaysiaId = ticketIdByTitle.get("マレーシアの雨季、洗濯物との戦い");
+  let deliverableCount = 0;
+  if (malaysiaId) {
+    const DELIVERABLE_SEEDS: Array<{
+      platform: schema.TicketDeliverable["platform"];
+      format: string;
+      role: schema.TicketDeliverable["role"];
+      workingTitle: string;
+      angle: string;
+      status: schema.TicketDeliverable["status"];
+    }> = [
+      {
+        platform: "instagram",
+        format: "カルーセル",
+        role: "discovery",
+        workingTitle: "雨季の洗濯、5つの工夫",
+        angle: "写真中心で、部屋干しのビフォーアフターを見せる",
+        status: "idea",
+      },
+      {
+        platform: "note",
+        format: "エッセイ",
+        role: "connection",
+        workingTitle: "雨と暮らすということ",
+        angle: "工夫よりも、慣れていく気持ちの変化を書く",
+        status: "interested",
+      },
+      {
+        platform: "blog",
+        format: "定番ガイド",
+        role: "utility",
+        workingTitle: "マレーシアの雨季、部屋干し完全ガイド",
+        angle: "検索から来る人向けに、実用情報を網羅する",
+        status: "idea",
+      },
+    ];
+    for (const d of DELIVERABLE_SEEDS) {
+      await db.insert(schema.ticketDeliverables).values({
+        ticketId: malaysiaId,
+        platform: d.platform,
+        format: d.format,
+        role: d.role,
+        workingTitle: d.workingTitle,
+        angle: d.angle,
+        status: d.status,
+        createdAt: now,
+        updatedAt: now,
+      });
+      deliverableCount++;
+    }
+  }
+
   console.log(`  ${offsets.length} published + 2 unpublished posts`);
   console.log(`  ${replyBodies.length} replies, 3 comments`);
   console.log(`  ${ticketCount} editorial ideas across ${new Set(TICKET_SEEDS.map((t) => t.pillar)).size} pillars`);
+  console.log(`  ${deliverableCount} platform deliverables`);
   console.log(`  content attributed to ${author.name} <${author.email}> (author)`);
   console.log(`  replies attributed to ${reader.name} <${reader.email}> (reader)`);
   console.log("done.");

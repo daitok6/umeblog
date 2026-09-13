@@ -5,6 +5,8 @@ import { getById } from "@/lib/repo/tickets";
 import { parseQuestions, PILLAR_LABEL, TYPE_LABEL } from "@/lib/tickets";
 import { PillarBadge, SignalRow, TicketStatusBadge, TypeBadge } from "@/components/admin/TicketBadges";
 import TicketQuickActions from "@/components/admin/TicketQuickActions";
+import PlatformPlan from "@/components/admin/PlatformPlan";
+import { aggregate, AGGREGATE_LABEL, crossPlatformLabel } from "@/lib/deliverables";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
   if (!ticket) notFound();
 
   const questions = parseQuestions(ticket.suggestedQuestions);
+  const agg = aggregate(ticket.deliverables);
+  const cross = crossPlatformLabel(ticket.crossPlatformPotential);
 
   return (
     <div>
@@ -39,6 +43,13 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             <PillarBadge pillar={ticket.pillar} />
             <TypeBadge topicType={ticket.topicType} />
           </div>
+
+          {agg ? (
+            <p className="ticket-aggregate label">
+              プラットフォーム全体：{AGGREGATE_LABEL[agg]}
+            </p>
+          ) : null}
+          {cross ? <p className="ticket-aggregate label">展開しやすさ：{cross}</p> : null}
 
           {ticket.description ? <p className="ticket-detail__desc">{ticket.description}</p> : null}
 
@@ -82,6 +93,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
               ))}
             </p>
           ) : null}
+
+          <PlatformPlan ticket={ticket} />
 
           <p className="hint" style={{ marginTop: "1.4rem" }}>
             手ごたえのめやす（あくまで目安です）

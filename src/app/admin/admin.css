@@ -1081,3 +1081,90 @@
     flex-direction: column;
   }
 }
+
+/* ── Platform deliverables ──────────────────────────────────
+   Same "no pressure" rule as the ideas above: skipping a platform is an
+   ordinary outcome, never shown as a warning. See tests/rules.spec.ts. */
+
+.status--idea {
+  border-color: var(--rule);
+  color: var(--ink);
+}
+.status--skipped {
+  border-color: var(--faint);
+  color: var(--faint);
+}
+
+.platform {
+  border: 1px solid var(--rule);
+  padding: 1px 6px;
+}
+
+.content-role {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.ticket-aggregate {
+  margin-bottom: 0.6rem;
+}
+
+.tabs--platform {
+  margin-top: -0.6rem;
+}
+
+/* ── Platform summary (card / board) ───────────────────────── */
+.platform-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.6rem 0;
+  padding: 0;
+  list-style: none;
+}
+.platform-summary__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.platform-summary__platform {
+  font-family: var(--f-mono);
+  font-weight: 700;
+  min-width: 2.4em;
+}
+.platform-summary__status {
+  color: var(--muted);
+}
+.platform-summary__empty {
+  margin: 0.6rem 0;
+}
+
+/* ── Platform plan (ticket detail) ─────────────────────────── */
+.platform-plan__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.platform-plan__item {
+  margin: 0;
+}
+.platform-plan__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.deliverable-form {
+  max-width: none;
+  margin-top: 0.8rem;
+}
+
+@media (max-width: 768px) {
+  .platform-plan__summary {
+    gap: 0.4rem;
+  }
+}
