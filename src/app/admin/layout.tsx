@@ -36,7 +36,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               サイトを見る
             </Link>
           </nav>
-          <form action={logoutAction}>
+          <form action={logoutAction} className="admin-bar__logout-form">
             <button className="admin-bar__logout" type="submit">
               ログアウト（{user.name}）
             </button>

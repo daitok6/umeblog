@@ -638,6 +638,30 @@
     display: inline-flex;
     align-items: center;
   }
+  /* Logo + logout stay on one row; nav becomes its own horizontally
+     scrolling row underneath instead of wrapping item-by-item. */
+  .admin-bar__inner {
+    padding: 10px var(--inset);
+    row-gap: 6px;
+  }
+  .admin-bar__logo {
+    order: 1;
+  }
+  .admin-bar__logout-form {
+    order: 2;
+    margin-left: auto;
+  }
+  .admin-bar__nav {
+    order: 3;
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    gap: 1.1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-bar__nav a {
+    flex-shrink: 0;
+  }
   .write-cta {
     padding: 2rem 1rem;
   }
