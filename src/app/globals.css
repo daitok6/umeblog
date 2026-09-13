@@ -30,6 +30,23 @@
   --f-body: var(--font-public-sans), var(--font-zen-kaku), "Hiragino Kaku Gothic ProN",
     "Yu Gothic", Meiryo, system-ui, sans-serif;
   --f-mono: var(--font-azeret), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── 小生 brand kit — public site only, scoped onto .public-shell ──
+     Kept as their own tokens rather than overwriting --ground/--ink here,
+     so the admin (which never wraps in .public-shell) keeps its current
+     monochrome look untouched. */
+  --shosei-blue: #34758d;
+  --shosei-aqua: #8bc8b9;
+  --shosei-green: #72a498;
+  --shosei-cream: #f5f2ea;
+  --shosei-red: #dc3c40;
+  --shosei-red-deep: #b7190c;
+  --shosei-ink: #22201b;
+  --shosei-muted: #6b6558;
+  --shosei-faint: #9a9484;
+  --f-noto: var(--font-noto-sans-jp), var(--font-zen-kaku), "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", Meiryo, sans-serif;
+  --f-hand: var(--font-kalam), cursive;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Public_Sans, Zen_Kaku_Gothic_New, Azeret_Mono } from "next/font/google";
+import { Public_Sans, Zen_Kaku_Gothic_New, Azeret_Mono, Noto_Sans_JP, Kalam } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { assertEnv } from "@/lib/env";
@@ -25,7 +25,7 @@ const publicSans = Public_Sans({
 });
 
 const zenKaku = Zen_Kaku_Gothic_New({
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "700", "900"],
   subsets: ["latin"],
   variable: "--font-zen-kaku",
   display: "swap",
@@ -39,19 +39,38 @@ const azeret = Azeret_Mono({
   display: "swap",
 });
 
+/** 小生 brand: body copy on the public site. */
+const notoSansJP = Noto_Sans_JP({
+  weight: ["400", "500", "700"],
+  subsets: ["latin"],
+  variable: "--font-noto-sans-jp",
+  display: "swap",
+  preload: false,
+});
+
+/** 小生 brand: the handwritten role — logo, category labels, dates. */
+const kalam = Kalam({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-kalam",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "うめ",
-    template: "%s — うめ",
+    default: "小生",
+    template: "%s — 小生",
   },
-  description: "日々を綴るブログ",
+  description: "ちょっとレトロ、ちょっと旅、ちょっとヘン。",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
-      <body className={`${publicSans.variable} ${zenKaku.variable} ${azeret.variable}`}>
+      <body
+        className={`${publicSans.variable} ${zenKaku.variable} ${azeret.variable} ${notoSansJP.variable} ${kalam.variable}`}
+      >
         {children}
         <Analytics />
         <SpeedInsights />

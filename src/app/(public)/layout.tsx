@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import ResponsiveName from "@/components/ResponsiveName";
 import { getSettings, bannerNames, siteNames } from "@/lib/repo/settings";
@@ -23,12 +24,24 @@ export default async function PublicLayout({ children }: { children: React.React
       <main>{children}</main>
       <footer className="site-footer">
         <div className="container site-footer__inner">
-          <span className="label">
-            {kou.sekki} {kou.phase} — {kou.name}（{kou.reading}）
-          </span>
-          <span className="label">
-            <ResponsiveName wide={site.wide} narrow={site.narrow} />
-          </span>
+          <div className="site-footer__brand">
+            <span className="site-footer__logo">
+              <ResponsiveName wide={site.wide} narrow={site.narrow} />
+            </span>
+            {settings.tagline ? <p className="site-footer__tagline">{settings.tagline}</p> : null}
+          </div>
+          <nav className="site-footer__nav">
+            <Link href="/blog">Blog</Link>
+            <Link href="/about">About</Link>
+          </nav>
+          <div className="site-footer__meta">
+            <span className="site-footer__sekki">
+              {kou.sekki} {kou.phase} — {kou.name}（{kou.reading}）
+            </span>
+            <span className="site-footer__copyright">
+              © {new Date().getFullYear()} <ResponsiveName wide={site.wide} narrow={site.narrow} />
+            </span>
+          </div>
         </div>
       </footer>
     </div>

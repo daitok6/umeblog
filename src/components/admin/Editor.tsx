@@ -25,12 +25,15 @@ const schema = BlockNoteSchema.create({
   },
 });
 
+type Kind = "photo" | "graphic" | "drawing";
+
 type Props = {
   postId: number;
   initialTitle: string;
   initialLead: string;
   initialContent: string;
   initialTags: string[];
+  initialKind: Kind;
   initialHint?: string;
 };
 
@@ -42,11 +45,13 @@ export default function Editor({
   initialLead,
   initialContent,
   initialTags,
+  initialKind,
   initialHint,
 }: Props) {
   const [title, setTitle] = useState(initialTitle);
   const [lead, setLead] = useState(initialLead || initialHint || "");
   const [tagText, setTagText] = useState(initialTags.join(" "));
+  const [kind, setKind] = useState<Kind>(initialKind);
   const [simple, setSimple] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -131,6 +136,7 @@ export default function Editor({
       lead,
       contentJson: JSON.stringify(editor.document),
       tags,
+      kind,
     });
 
     if (result.ok) {
@@ -140,7 +146,7 @@ export default function Editor({
     } else {
       setSaveState("error");
     }
-  }, [editor, lead, postId, tagText, title]);
+  }, [editor, kind, lead, postId, tagText, title]);
 
   const scheduleSave = useCallback(() => {
     dirtyRef.current = true;
@@ -256,6 +262,23 @@ export default function Editor({
             scheduleSave();
           }}
         />
+
+        <label className="label" htmlFor="kind" style={{ marginLeft: "1rem" }}>
+          カード種別
+        </label>
+        <select
+          id="kind"
+          data-testid="kind-select"
+          value={kind}
+          onChange={(e) => {
+            setKind(e.target.value as Kind);
+            scheduleSave();
+          }}
+        >
+          <option value="photo">写真</option>
+          <option value="graphic">グラフィック</option>
+          <option value="drawing">手描き</option>
+        </select>
       </div>
 
       <div className={`editor-body${simple ? " editor-body--simple" : ""}`}>

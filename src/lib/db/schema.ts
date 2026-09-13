@@ -67,6 +67,10 @@ export const posts = pgTable(
     publishedAt: bigint("published_at", { mode: "number" }),
     /** The photo + one line format. First-class, not a lesser post. */
     isTiny: boolean("is_tiny").notNull().default(false),
+    /** Which card treatment the blog grid gives this post. Author-set. */
+    kind: text("kind", { enum: ["photo", "graphic", "drawing"] })
+      .notNull()
+      .default("photo"),
     /**
      * The one stored counter in this codebase — everything in stats.ts is
      * deliberately DERIVED rather than stored, but a view leaves no other

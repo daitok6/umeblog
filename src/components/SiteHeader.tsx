@@ -67,9 +67,6 @@ export default function SiteHeader({ wide, narrow }: { wide: string; narrow: str
           <Link className="nav-link" href="/blog">
             Blog
           </Link>
-          <Link className="nav-link" href="/tags">
-            Tags
-          </Link>
           <Link className="nav-link" href="/about">
             About
           </Link>

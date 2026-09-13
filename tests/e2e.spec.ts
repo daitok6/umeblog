@@ -43,9 +43,9 @@ test("write a post, publish it, read it, and receive a reply", async ({ page }) 
   );
 
   await page.goto("/blog");
-  await expect(page.locator(".post-list")).toContainText(marker);
+  await expect(page.locator(".blog-grid")).toContainText(marker);
 
-  await page.locator(".post-row__link", { hasText: marker }).click();
+  await page.locator(".blog-card__link", { hasText: marker }).click();
   await page.waitForURL(/\/p\//);
   await expect(page.locator(".article__title")).toContainText(marker);
   await expect(page.locator(".prose")).toContainText("本文をここに書きます。");
@@ -103,7 +103,7 @@ test("a scheduled post stays hidden until its time passes", async ({ page }) => 
   // Not on the public site yet — the visibility predicate compares publishAt
   // to now at read time, which is why no cron job is needed.
   await page.goto("/blog");
-  await expect(page.locator(".post-list")).not.toContainText(marker);
+  await expect(page.locator(".blog-grid")).not.toContainText(marker);
 });
 
 test("unpublishing removes a post from the public site but keeps its number", async ({
@@ -122,7 +122,7 @@ test("unpublishing removes a post from the public site but keeps its number", as
   await page.waitForURL("**/admin/posts");
 
   await page.goto("/blog");
-  await expect(page.locator(".post-list")).toContainText(marker);
+  await expect(page.locator(".blog-grid")).toContainText(marker);
 
   // Capture the number it was given.
   await page.goto(postUrl);
@@ -137,7 +137,7 @@ test("unpublishing removes a post from the public site but keeps its number", as
   await expect(page.locator(".status")).toContainText("下書き");
 
   await page.goto("/blog");
-  await expect(page.locator(".post-list")).not.toContainText(marker);
+  await expect(page.locator(".blog-grid")).not.toContainText(marker);
 
   // Republishing must not renumber it — readers' links and the numbering they
   // see stay put.
@@ -149,5 +149,5 @@ test("unpublishing removes a post from the public site but keeps its number", as
   expect(await serialOf()).toBe(serial);
 
   await page.goto("/blog");
-  await expect(page.locator(".post-list")).toContainText(marker);
+  await expect(page.locator(".blog-grid")).toContainText(marker);
 });

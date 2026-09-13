@@ -5,8 +5,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import PostList from "@/components/PostList";
 import type { PostWithMeta } from "@/lib/repo/posts";
 
-type Sort = "new" | "old";
-
 /**
  * Instant client-side search + filters over the full published list.
  *
@@ -20,8 +18,6 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
   const [rawQuery, setRawQuery] = useState("");
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);
-  const [year, setYear] = useState<number | null>(null);
-  const [sort, setSort] = useState<Sort>("new");
   const composing = useRef(false);
   const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -48,16 +44,6 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
     return [...counts.values()].sort((a, b) => b.count - a.count);
   }, [posts]);
 
-  const yearFacets = useMemo(() => {
-    const counts = new Map<number, number>();
-    for (const p of posts) {
-      if (p.publishedAt == null) continue;
-      const y = new Date(p.publishedAt).getFullYear();
-      counts.set(y, (counts.get(y) ?? 0) + 1);
-    }
-    return [...counts.entries()].sort((a, b) => b[0] - a[0]);
-  }, [posts]);
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let rows = posts;
@@ -73,29 +59,16 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
     if (tag) {
       rows = rows.filter((p) => p.tags.some((t) => t.slug === tag));
     }
-    if (year != null) {
-      rows = rows.filter(
-        (p) => p.publishedAt != null && new Date(p.publishedAt).getFullYear() === year,
-      );
-    }
 
-    rows = [...rows].sort((a, b) => {
-      const ad = a.publishedAt ?? 0;
-      const bd = b.publishedAt ?? 0;
-      return sort === "new" ? bd - ad : ad - bd;
-    });
+    return [...rows].sort((a, b) => (b.publishedAt ?? 0) - (a.publishedAt ?? 0));
+  }, [posts, query, tag]);
 
-    return rows;
-  }, [posts, query, tag, year, sort]);
-
-  const hasFilters = query.trim() !== "" || tag != null || year != null || sort !== "new";
+  const hasFilters = query.trim() !== "" || tag != null;
 
   function resetFilters() {
     setRawQuery("");
     setQuery("");
     setTag(null);
-    setYear(null);
-    setSort("new");
   }
 
   return (
@@ -108,7 +81,7 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
           <input
             id="blog-search"
             type="search"
-            className="site-search__input blog-filters__search"
+            className="blog-filters__search"
             placeholder="タイトル・タグで検索"
             value={rawQuery}
             maxLength={80}
@@ -121,36 +94,6 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
               setQuery(e.currentTarget.value);
             }}
           />
-
-          <label className="visually-hidden" htmlFor="blog-year">
-            年で絞り込み
-          </label>
-          <select
-            id="blog-year"
-            className="blog-filters__select"
-            value={year ?? ""}
-            onChange={(e) => setYear(e.target.value ? Number(e.target.value) : null)}
-          >
-            <option value="">すべての年</option>
-            {yearFacets.map(([y, count]) => (
-              <option key={y} value={y}>
-                {y}年（{count}）
-              </option>
-            ))}
-          </select>
-
-          <label className="visually-hidden" htmlFor="blog-sort">
-            並び順
-          </label>
-          <select
-            id="blog-sort"
-            className="blog-filters__select"
-            value={sort}
-            onChange={(e) => setSort(e.target.value as Sort)}
-          >
-            <option value="new">新しい順</option>
-            <option value="old">古い順</option>
-          </select>
 
           {hasFilters ? (
             <button type="button" className="blog-filters__reset" onClick={resetFilters}>
@@ -169,21 +112,21 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
                 aria-pressed={tag === t.slug}
                 onClick={() => setTag(tag === t.slug ? null : t.slug)}
               >
-                {t.name}
-                <span className="n">{t.count}</span>
+                ({t.name})<span className="n">{t.count}</span>
               </button>
             ))}
           </div>
         ) : null}
       </div>
 
-      <p className="blog-count label" aria-live="polite">
+      <p className="blog-count" aria-live="polite">
         {filtered.length} 本
       </p>
 
       {filtered.length === 0 && posts.length > 0 ? (
         <div className="blog-nomatch frame">
           <p>条件に一致する記事はありませんでした。</p>
+          <p className="blog-nomatch__sub">小生、探すのをやめない。</p>
           {query.trim() ? (
             <p>
               <Link href={`/search?q=${encodeURIComponent(query.trim())}`}>

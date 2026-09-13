@@ -26,6 +26,7 @@ export async function savePostAction(input: {
   lead: string;
   contentJson: string;
   tags: string[];
+  kind: "photo" | "graphic" | "drawing";
 }): Promise<SaveResult> {
   try {
     await requireAuthor();
@@ -33,6 +34,7 @@ export async function savePostAction(input: {
       title: input.title,
       lead: input.lead,
       contentJson: input.contentJson,
+      kind: input.kind,
     });
     await setPostTags(input.id, input.tags);
     return { ok: true, savedAt: Date.now() };

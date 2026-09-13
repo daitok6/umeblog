@@ -39,7 +39,7 @@ test("search finds a published post by body text", async ({ page }) => {
   await page.locator(".site-search__submit").click();
 
   await page.waitForURL(/\/search\?q=/);
-  await expect(page.locator(".post-list")).toContainText(marker);
+  await expect(page.locator(".blog-grid")).toContainText(marker);
 
   // ── A query matching nothing shows the no-results message ──
   const nonsense = `該当なし-${Date.now()}`;

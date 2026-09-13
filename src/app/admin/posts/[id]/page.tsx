@@ -64,6 +64,7 @@ export default async function EditPostPage({
           initialLead={post.lead}
           initialContent={post.contentJson}
           initialTags={post.tags.map((t) => t.name)}
+          initialKind={post.kind}
           initialHint={sp.hint}
         />
         <PostSidebar

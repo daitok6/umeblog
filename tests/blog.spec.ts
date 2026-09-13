@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { login, newPost } from "./helpers";
 
 /**
- * /blog is the full archive: search + tag/year/sort filters, all applied
+ * /blog is the full archive: search + category-tag filters, all applied
  * instantly in the browser (no navigation, no reload). This publishes real
  * posts and drives the filter UI the way a reader would.
  */
@@ -41,7 +41,7 @@ test("filters and searches the blog list instantly, with no navigation", async (
   // ── A reader lands on /blog ───────────────────────────────────────
   await page.goto("/blog");
   const searchInput = page.locator("#blog-search");
-  const rows = page.locator(".post-row");
+  const rows = page.locator(".blog-card");
 
   // Marks a global to prove filtering never triggers a navigation.
   await page.evaluate(() => {
@@ -54,12 +54,6 @@ test("filters and searches the blog list instantly, with no navigation", async (
   await expect(rows.nth(0)).toContainText(markerB);
   await expect(rows.nth(1)).toContainText(markerA);
   await expect(page.locator(".blog-count")).toContainText("2 本");
-
-  // ── Sort flips the order without touching count ─────────────────
-  await page.locator("#blog-sort").selectOption("old");
-  await expect(rows.nth(0)).toContainText(markerA);
-  await expect(rows.nth(1)).toContainText(markerB);
-  await page.locator("#blog-sort").selectOption("new");
 
   // ── A nonsense query shows the no-match state with an escape to /search ──
   const nonsense = `該当なし-${stamp}`;

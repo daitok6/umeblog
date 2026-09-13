@@ -18,12 +18,26 @@ export default async function BlogPage() {
   const posts = raw.map((p) => ({ ...p, contentJson: "" }));
 
   return (
-    <div className="container">
-      <div className="section-title">
-        <h2>Blog</h2>
-        <span className="kana-sub">ブログ</span>
+    <>
+      <section className="blog-hero">
+        <div className="blog-hero__motifs" aria-hidden="true">
+          <span className="blog-hero__motif blog-hero__motif--plant" />
+          <span className="blog-hero__motif blog-hero__motif--globe blog-hero__motif--extra" />
+          <span className="blog-hero__motif blog-hero__motif--plane" />
+          <span className="blog-hero__motif blog-hero__motif--cup blog-hero__motif--extra" />
+          <span className="blog-hero__motif blog-hero__motif--mascot" />
+        </div>
+        <div className="container blog-hero__inner">
+          <div className="blog-hero__copy">
+            <p className="blog-hero__tagline">ちょっとレトロ、ちょっと旅、ちょっとヘン。</p>
+            <h1 className="blog-hero__title">Blog</h1>
+            <span className="blog-hero__kana">ブログ</span>
+          </div>
+        </div>
+      </section>
+      <div className="container">
+        <BlogBrowser posts={posts} />
       </div>
-      <BlogBrowser posts={posts} />
-    </div>
+    </>
   );
 }

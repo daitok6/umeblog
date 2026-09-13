@@ -59,7 +59,7 @@ test.describe("moderation end to end", () => {
     // (correctly) block repeated runs from the same address.
     await page.setExtraHTTPHeaders({ "x-forwarded-for": `198.51.100.${Date.now() % 200}` });
     await page.goto("/blog");
-    await page.locator(".post-row__link").first().click();
+    await page.locator(".blog-card__link").first().click();
     await page.locator(".comment-form").waitFor();
 
     const marker = `spamcheck-${Date.now()}`;
@@ -79,7 +79,7 @@ test.describe("moderation end to end", () => {
     await page.setExtraHTTPHeaders({ "x-forwarded-for": `203.0.113.${Date.now() % 200}` });
 
     await page.goto("/blog");
-    await page.locator(".post-row__link").first().click();
+    await page.locator(".blog-card__link").first().click();
     // Wait for the navigation to settle before reading the URL, or page.url()
     // still reports "/" and the final assertion checks the wrong page.
     await page.waitForURL(/\/p\//);
@@ -116,7 +116,7 @@ test("the rate limiter blocks a burst from one address", async ({ page }) => {
   await page.setExtraHTTPHeaders({ "x-forwarded-for": ip });
 
   await page.goto("/blog");
-  await page.locator(".post-row__link").first().click();
+  await page.locator(".blog-card__link").first().click();
   await page.locator(".comment-form").waitFor();
 
   // Three are allowed; the fourth must be refused.

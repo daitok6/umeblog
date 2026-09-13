@@ -24,7 +24,7 @@ test("visiting a post sends exactly one view beacon per session", async ({ page 
   await page.goto("/blog");
   await page.locator("#blog-search").fill(marker);
   const firstRequest = page.waitForRequest("**/api/track");
-  await page.locator(".post-row__link", { hasText: marker }).click();
+  await page.locator(".blog-card__link", { hasText: marker }).click();
   await page.waitForURL(/\/p\//);
   await firstRequest;
 

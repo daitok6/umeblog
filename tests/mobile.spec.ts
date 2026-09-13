@@ -14,7 +14,7 @@ for (const width of WIDTHS) {
   test(`public pages fit at ${width}px with no sideways scroll`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
 
-    for (const path of ["/", "/blog", "/tags", "/about"]) {
+    for (const path of ["/", "/blog", "/about"]) {
       await page.goto(path);
       const overflow = await page.evaluate(() => {
         // A card inside a horizontally-scrolling rail is *meant* to sit
@@ -55,7 +55,7 @@ for (const width of WIDTHS) {
 test("the article page fits and stays readable at 375px", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   await page.goto("/blog");
-  await page.locator(".post-row__link").first().click();
+  await page.locator(".blog-card__link").first().click();
   await page.locator(".prose").waitFor();
 
   const m = await page.evaluate(() => {
