@@ -27,12 +27,15 @@ async function main() {
   const ids = testUsers.map((u) => u.id);
 
   if (ids.length > 0) {
-    // posts.authorId and replies.userId have no onDelete cascade (deleting a
-    // real account must never silently delete its posts), so both need an
-    // explicit delete before the users themselves. Posts cascade to their
-    // own post_tags/replies/comments automatically once deleted.
+    // posts.authorId, replies.userId, and tickets.createdById have no onDelete
+    // cascade (deleting a real account must never silently delete its posts
+    // or ideas), so all three need an explicit delete before the users
+    // themselves. Posts cascade to their own post_tags/replies/comments
+    // automatically once deleted; tickets.linkedPostId is `set null`, so
+    // deleting posts first never blocks on a linked ticket.
     await db.delete(schema.replies).where(inArray(schema.replies.userId, ids));
     await db.delete(schema.posts).where(inArray(schema.posts.authorId, ids));
+    await db.delete(schema.tickets).where(inArray(schema.tickets.createdById, ids));
     await db.delete(schema.users).where(inArray(schema.users.id, ids));
   }
 

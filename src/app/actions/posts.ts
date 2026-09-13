@@ -6,6 +6,7 @@ import { requireAuthor, requireAuthorOrRedirect, requireUserOrRedirect } from "@
 import * as postsRepo from "@/lib/repo/posts";
 import { setPostTags, slugify } from "@/lib/repo/tags";
 import { addReply } from "@/lib/repo/replies";
+import { markPublishedForPost } from "@/lib/repo/tickets";
 
 export async function createPostAction(isTiny: boolean): Promise<never> {
   const user = await requireAuthorOrRedirect();
@@ -54,8 +55,10 @@ export async function publishAction(id: number): Promise<void> {
   const post = await postsRepo.getById(id);
   await postsRepo.publishPost(id);
   await ensureSlug(id, post?.title ?? "");
+  await markPublishedForPost(id);
   revalidatePath("/");
   revalidatePath("/admin");
+  revalidatePath("/admin/tickets");
   revalidatePath("/p/[slug]", "page");
   redirect("/admin/posts");
 }

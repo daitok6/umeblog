@@ -733,3 +733,351 @@
   font-size: 13px;
   padding: 1rem 0;
 }
+
+/* ── Ideas (editorial ticket manager) ──────────────────────
+   An idea library, not a task board: quiet colours only, nothing that
+   reads as overdue or urgent. See tests/rules.spec.ts. */
+
+.status--interested {
+  border-color: var(--muted);
+  color: var(--muted);
+}
+.status--selected {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.status--in_progress {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.status--draft_ready {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.status--archived {
+  border-color: var(--faint);
+  color: var(--faint);
+}
+
+.ticket-pillar {
+  border: 1px solid var(--rule);
+  padding: 1px 6px;
+}
+
+.ticket-priority {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.ticket-signals {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.ticket-signals__item {
+  white-space: nowrap;
+}
+
+/* ── List / cards ───────────────────────────────────────── */
+.ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.ticket-card {
+  display: block;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 1.1rem 1.2rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.ticket-card:hover {
+  border-color: var(--rule-strong);
+}
+.ticket-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+.ticket-card__title {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  margin-bottom: 0.4rem;
+}
+.ticket-card__desc {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.8;
+  margin-bottom: 0.6rem;
+}
+.ticket-card__meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+.ticket-card__tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.ticket-card__tag {
+  white-space: nowrap;
+}
+.ticket-card__foot {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule);
+  padding-top: 0.6rem;
+}
+
+/* ── Filters ────────────────────────────────────────────── */
+.ticket-filters {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+.ticket-filters__q {
+  min-width: 200px;
+  flex: 1;
+}
+.ticket-filters select,
+.ticket-filters input[type="search"] {
+  min-height: 40px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 0.4rem 0.6rem;
+}
+.ticket-filters__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 13px;
+  color: var(--muted);
+  min-height: 40px;
+}
+/* Custom square checkbox: the element's own box is a thumb-sized 40px so
+   the native hit area is genuinely large (padding alone doesn't grow a
+   checkbox's hit area in Chromium), while a centered ::before keeps the
+   visible mark small and square, matching the site's border-radius: 0. */
+.ticket-filters__check input[type="checkbox"],
+.ticket-form__check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  position: relative;
+  cursor: pointer;
+  flex: none;
+}
+.ticket-filters__check input[type="checkbox"]::before,
+.ticket-form__check input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+}
+.ticket-filters__check input[type="checkbox"]:checked::before,
+.ticket-form__check input[type="checkbox"]:checked::before {
+  background: var(--ink);
+}
+.ticket-filters__check input[type="checkbox"]:focus-visible,
+.ticket-form__check input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ── Board ──────────────────────────────────────────────── */
+.ticket-board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 1fr);
+  gap: 0.9rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+.ticket-board__col {
+  border: 1px solid var(--rule);
+  background: var(--sunken);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+}
+.ticket-board__col-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.7rem 0.8rem;
+  border-bottom: 1px solid var(--rule);
+}
+.ticket-board__col-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+.ticket-board__col-body {
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ticket-board__card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 0.6rem 0.7rem;
+  text-decoration: none;
+  color: inherit;
+}
+.ticket-board__card:hover {
+  border-color: var(--rule-strong);
+}
+.ticket-board__card-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 0.3rem;
+}
+.ticket-board__card-meta {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* ── Form ───────────────────────────────────────────────── */
+.ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 640px;
+}
+.ticket-form input,
+.ticket-form textarea,
+.ticket-form select {
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+.ticket-form__row {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.ticket-form__row > div {
+  flex: 1;
+  min-width: 140px;
+}
+.ticket-form__section {
+  border: 1px solid var(--rule);
+  padding: 0.9rem 1rem;
+  margin: 0.4rem 0 0.8rem;
+}
+.ticket-form__section summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+.ticket-form__section[open] summary {
+  margin-bottom: 0.8rem;
+}
+.ticket-form__check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
+  margin-bottom: 0.6rem;
+}
+.ticket-form__check input {
+  width: auto;
+  margin: 0;
+}
+
+.ticket-questions__row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  align-items: center;
+}
+.ticket-questions__row input {
+  margin-bottom: 0;
+}
+.ticket-questions__remove {
+  flex: none;
+  min-width: 40px;
+  justify-content: center;
+}
+
+/* ── Detail ─────────────────────────────────────────────── */
+.ticket-detail {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.5rem;
+  align-items: start;
+}
+.ticket-detail__head {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+.ticket-detail__desc {
+  font-size: 15px;
+  color: var(--ink-2);
+  line-height: 1.9;
+}
+.ticket-detail__text {
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+.ticket-detail__questions {
+  padding-left: 1.2em;
+  line-height: 2;
+}
+.ticket-detail__tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+  .ticket-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .ticket-grid {
+    grid-template-columns: 1fr;
+  }
+  .ticket-board {
+    grid-auto-columns: minmax(70vw, 1fr);
+    scroll-snap-type: x proximity;
+  }
+  .ticket-board__col {
+    scroll-snap-align: start;
+  }
+  .ticket-form__row {
+    flex-direction: column;
+  }
+}

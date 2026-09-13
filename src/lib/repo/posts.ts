@@ -171,7 +171,7 @@ export async function listMostDiscussed(limit = 12): Promise<PostWithMeta[]> {
  * Escapes ILIKE metacharacters so a reader-typed `%` or `_` matches itself
  * instead of acting as a wildcard.
  */
-function escapeLike(raw: string): string {
+export function escapeLike(raw: string): string {
   return raw.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
 

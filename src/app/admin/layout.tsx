@@ -23,6 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <nav className="admin-bar__nav">
             <Link href="/admin">ホーム</Link>
             <Link href="/admin/posts">記事</Link>
+            {user.role === "author" ? <Link href="/admin/tickets">アイデア</Link> : null}
             <Link href="/admin/comments">
               コメント
               {counts.pending > 0 ? (

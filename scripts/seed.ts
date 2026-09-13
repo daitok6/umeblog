@@ -17,6 +17,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../src/lib/db";
 import * as schema from "../src/lib/db/schema";
+import { ensureTag } from "../src/lib/repo/tags";
 
 const DAY = 86400000;
 
@@ -125,6 +126,8 @@ async function main() {
   await db.delete(schema.replies);
   await db.delete(schema.comments);
   await db.delete(schema.posts);
+  await db.delete(schema.ticketTags);
+  await db.delete(schema.tickets);
   await db.delete(schema.tags);
   await db.delete(schema.images);
   await db.delete(schema.blockedWords);
@@ -287,8 +290,179 @@ async function main() {
     },
   ]);
 
+  // Editorial ideas — a spread of pillars and statuses, none of them urgent.
+  const TICKET_SEEDS: Array<{
+    title: string;
+    description: string;
+    status: schema.Ticket["status"];
+    pillar: schema.Ticket["pillar"];
+    topicType: schema.Ticket["topicType"];
+    priority: schema.Ticket["priority"];
+    inspirationNotes: string;
+    suggestedQuestions: string;
+    creativeIdeas: string;
+    seoPotential: schema.Ticket["seoPotential"];
+    monetizationPotential: schema.Ticket["monetizationPotential"];
+    socialPotential: schema.Ticket["socialPotential"];
+    evergreen: boolean;
+    seasonal: boolean;
+    tags: string[];
+  }> = [
+    {
+      title: "マレーシアの雨季、洗濯物との戦い",
+      description: "毎日どこかで降る雨と、部屋干しの工夫について。",
+      status: "idea",
+      pillar: "live",
+      topicType: "journal",
+      priority: "normal",
+      inspirationNotes: "生活の小さな困りごとほど、共感されやすい気がする。",
+      suggestedQuestions: "何が一番困った？\n工夫してよかったことは？",
+      creativeIdeas: "部屋干しスペースのビフォーアフター写真",
+      seoPotential: "low",
+      monetizationPotential: "none",
+      socialPotential: "medium",
+      evergreen: false,
+      seasonal: true,
+      tags: ["日々", "マレーシア"],
+    },
+    {
+      title: "夫婦で違う『普通』の話",
+      description: "育った場所が違うと、当たり前が違う。",
+      status: "interested",
+      pillar: "live",
+      topicType: "journal",
+      priority: "high",
+      inspirationNotes: "だいとと話してて面白かった食い違いがいくつかある。",
+      suggestedQuestions: "一番驚いた違いは？\n今はどっちのやり方にした？",
+      creativeIdeas: "対比のイラスト（左右で違いを描く）",
+      seoPotential: "none",
+      monetizationPotential: "none",
+      socialPotential: "high",
+      evergreen: true,
+      seasonal: false,
+      tags: ["日々"],
+    },
+    {
+      title: "近所の茶餐室、ひとりで開拓した記録",
+      description: "歩いて行ける範囲の店を、少しずつ試している。",
+      status: "selected",
+      pillar: "eat_travel",
+      topicType: "recommendation",
+      priority: "normal",
+      inspirationNotes: "行きつけと呼べる店ができるまでの過程が面白そう。",
+      suggestedQuestions: "一番よかった店は？\n次はどこに行きたい？",
+      creativeIdeas: "店の位置を落とした簡単な地図",
+      seoPotential: "medium",
+      monetizationPotential: "low",
+      socialPotential: "medium",
+      evergreen: true,
+      seasonal: false,
+      tags: ["ごはん"],
+    },
+    {
+      title: "クアラルンプールの朝市で買ったもの",
+      description: "早起きした日にしか行けない市場の記録。",
+      status: "idea",
+      pillar: "eat_travel",
+      topicType: "journal",
+      priority: "normal",
+      inspirationNotes: "",
+      suggestedQuestions: "",
+      creativeIdeas: "買ったものを並べて撮った写真シリーズ",
+      seoPotential: "none",
+      monetizationPotential: "none",
+      socialPotential: "medium",
+      evergreen: false,
+      seasonal: false,
+      tags: ["旅"],
+    },
+    {
+      title: "愛用しているキッチン道具、5つ",
+      description: "毎日使う道具だけを、正直に選ぶ。",
+      status: "in_progress",
+      pillar: "use",
+      topicType: "recommendation",
+      priority: "normal",
+      inspirationNotes: "流行りものではなく、本当に使っているものだけにしたい。",
+      suggestedQuestions: "買ってよかった理由は？\n買い直すとしたら同じものを選ぶ？",
+      creativeIdeas: "道具を並べたフラットレイ写真",
+      seoPotential: "high",
+      monetizationPotential: "high",
+      socialPotential: "medium",
+      evergreen: true,
+      seasonal: false,
+      tags: ["暮らしの道具"],
+    },
+    {
+      title: "旅の荷物を軽くした持ち物リスト",
+      description: "毎回同じものを入れすぎている反省から。",
+      status: "idea",
+      pillar: "use",
+      topicType: "evergreen_guide",
+      priority: "low",
+      inspirationNotes: "",
+      suggestedQuestions: "結局使わなかったものは？",
+      creativeIdeas: "",
+      seoPotential: "medium",
+      monetizationPotential: "medium",
+      socialPotential: "low",
+      evergreen: true,
+      seasonal: false,
+      tags: ["旅", "暮らしの道具"],
+    },
+    {
+      title: "去年書きかけてやめた引っ越しの話",
+      description: "一度書きかけて、途中で止まっていたもの。",
+      status: "archived",
+      pillar: "live",
+      topicType: "journal",
+      priority: "low",
+      inspirationNotes: "熱が冷めてしまったけど、いつか続きを書くかもしれない。",
+      suggestedQuestions: "",
+      creativeIdeas: "",
+      seoPotential: "none",
+      monetizationPotential: "none",
+      socialPotential: "none",
+      evergreen: false,
+      seasonal: false,
+      tags: [],
+    },
+    {
+      title: "雨の日にしか作らないスープ",
+      description: "天気に合わせて作るものが決まっている、という話。",
+      status: "draft_ready",
+      pillar: "eat_travel",
+      topicType: "journal",
+      priority: "normal",
+      inspirationNotes: "季節ものとして、雨季にもう一度出したい。",
+      suggestedQuestions: "レシピは載せる？\n写真は仕上がりだけでいい？",
+      creativeIdeas: "仕上がりの一枚と、材料を並べた一枚",
+      seoPotential: "low",
+      monetizationPotential: "none",
+      socialPotential: "medium",
+      evergreen: false,
+      seasonal: true,
+      tags: ["ごはん", "雨"],
+    },
+  ];
+
+  let ticketCount = 0;
+  for (const seed of TICKET_SEEDS) {
+    const { tags: tagNames, ...rest } = seed;
+    const [row] = await db
+      .insert(schema.tickets)
+      .values({ ...rest, createdById: author.id, createdAt: now, updatedAt: now })
+      .returning({ id: schema.tickets.id });
+    for (const name of tagNames) {
+      const tagId = await ensureTag(name);
+      await db.insert(schema.ticketTags).values({ ticketId: row.id, tagId }).onConflictDoNothing();
+    }
+    ticketCount++;
+  }
+
   console.log(`  ${offsets.length} published + 2 unpublished posts`);
   console.log(`  ${replyBodies.length} replies, 3 comments`);
+  console.log(`  ${ticketCount} editorial ideas across ${new Set(TICKET_SEEDS.map((t) => t.pillar)).size} pillars`);
   console.log(`  content attributed to ${author.name} <${author.email}> (author)`);
   console.log(`  replies attributed to ${reader.name} <${reader.email}> (reader)`);
   console.log("done.");

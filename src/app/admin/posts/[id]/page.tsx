@@ -6,6 +6,7 @@ import ReplyBox from "@/components/admin/ReplyBox";
 import { getById } from "@/lib/repo/posts";
 import { listForPost } from "@/lib/repo/replies";
 import { getSessionUser } from "@/lib/auth/session";
+import { ticketForPost } from "@/lib/repo/tickets";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function EditPostPage({
   const [post, user] = await Promise.all([getById(postId), getSessionUser()]);
   if (!post) notFound();
 
-  const replies = await listForPost(postId);
+  const [replies, ticket] = await Promise.all([listForPost(postId), ticketForPost(postId)]);
   const isAuthor = user?.role === "author";
 
   // A trusted reader opens this page to answer, not to edit.
@@ -44,9 +45,16 @@ export default async function EditPostPage({
     <div>
       <div className="page-head">
         <h1>{post.title || "無題"}</h1>
-        <Link className="btn-sm" href="/admin/posts">
-          一覧へ戻る
-        </Link>
+        <span style={{ display: "flex", gap: "0.6rem" }}>
+          {ticket ? (
+            <Link className="btn-sm" href={`/admin/tickets/${ticket.id}`}>
+              もとのアイデア
+            </Link>
+          ) : null}
+          <Link className="btn-sm" href="/admin/posts">
+            一覧へ戻る
+          </Link>
+        </span>
       </div>
 
       <div className="editor-grid">

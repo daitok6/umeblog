@@ -240,6 +240,97 @@ export const siteSettings = pgTable("site_settings", {
   railsJson: text("rails_json").notNull().default(""),
 });
 
+
+/**
+ * Editorial idea library. A ticket is a suggestion, not an assignment — it
+ * can sit in `idea` indefinitely with no penalty, and nothing here ever
+ * marks something overdue (see the README's "no number may reset to zero"
+ * rule, which this table must not violate in spirit either). Deleting the
+ * post it turns into never deletes the idea behind it, and vice versa.
+ */
+export const tickets = pgTable(
+  "tickets",
+  {
+    id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
+    title: text("title").notNull().default(""),
+    description: text("description").notNull().default(""),
+    status: text("status", {
+      enum: [
+        "idea",
+        "interested",
+        "selected",
+        "in_progress",
+        "draft_ready",
+        "published",
+        "archived",
+      ],
+    })
+      .notNull()
+      .default("idea"),
+    /** Editorial pillar. Internal only — never surfaced as a public tag. */
+    pillar: text("pillar", { enum: ["live", "eat_travel", "use"] })
+      .notNull()
+      .default("live"),
+    topicType: text("topic_type", {
+      enum: ["journal", "search", "recommendation", "social", "evergreen_guide"],
+    })
+      .notNull()
+      .default("journal"),
+    /** Subtle by design — never rendered as a warning colour. */
+    priority: text("priority", { enum: ["low", "normal", "high"] })
+      .notNull()
+      .default("normal"),
+    /** Freeform: why this might be worth writing. */
+    inspirationNotes: text("inspiration_notes").notNull().default(""),
+    /** One prompt per line, plain text (not JSON) so ILIKE search reaches it. */
+    suggestedQuestions: text("suggested_questions").notNull().default(""),
+    /** Visual ideas — illustration concept, photo series, map, etc. */
+    creativeIdeas: text("creative_ideas").notNull().default(""),
+    seoPotential: text("seo_potential", { enum: ["none", "low", "medium", "high"] })
+      .notNull()
+      .default("none"),
+    monetizationPotential: text("monetization_potential", {
+      enum: ["none", "low", "medium", "high"],
+    })
+      .notNull()
+      .default("none"),
+    socialPotential: text("social_potential", { enum: ["none", "low", "medium", "high"] })
+      .notNull()
+      .default("none"),
+    evergreen: boolean("evergreen").notNull().default(false),
+    seasonal: boolean("seasonal").notNull().default(false),
+    /** A hint, not a deadline — day granularity, rendered as "◯月ごろ". */
+    targetPublishDate: bigint("target_publish_date", { mode: "number" }),
+    /** set null, not cascade — deleting the post must never delete the idea. */
+    linkedPostId: integer("linked_post_id").references(() => posts.id, { onDelete: "set null" }),
+    createdById: integer("created_by_id")
+      .notNull()
+      .references(() => users.id),
+    claimedAt: bigint("claimed_at", { mode: "number" }),
+    startedAt: bigint("started_at", { mode: "number" }),
+    completedAt: bigint("completed_at", { mode: "number" }),
+    createdAt: bigint("created_at", { mode: "number" }).notNull(),
+    updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
+  },
+  (t) => [
+    index("tickets_status_idx").on(t.status),
+    index("tickets_updated_idx").on(t.updatedAt),
+  ],
+);
+
+export const ticketTags = pgTable(
+  "ticket_tags",
+  {
+    ticketId: integer("ticket_id")
+      .notNull()
+      .references(() => tickets.id, { onDelete: "cascade" }),
+    tagId: integer("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.ticketId, t.tagId] })],
+);
+
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -252,3 +343,5 @@ export type AnalyticsEvent = typeof events.$inferSelect;
 export type NewAnalyticsEvent = typeof events.$inferInsert;
 export type ShortLink = typeof shortLinks.$inferSelect;
 export type NewShortLink = typeof shortLinks.$inferInsert;
+export type Ticket = typeof tickets.$inferSelect;
+export type NewTicket = typeof tickets.$inferInsert;
