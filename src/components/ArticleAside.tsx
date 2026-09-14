@@ -6,23 +6,24 @@ import TocSpy from "@/components/TocSpy";
 import type { Heading } from "@/lib/blocks";
 import { formatDate } from "@/lib/formatDate";
 import type { PostWithMeta } from "@/lib/repo/posts";
-import { schema } from "@/lib/db";
-
-type SideTag = schema.Tag & { count: number };
 
 /**
- * Desktop-only sticky sidebar for the article page: 目次 / 関連記事 / 話題 /
+ * Desktop-only sticky sidebar for the article page: 目次 / 関連記事 /
  * 最近の記事. Hidden entirely below 768px (see `.article__aside` in
  * public.css) — the mobile equivalents (`<ArticleToc variant="mobile">`,
  * the `.related-tail` RelatedList) are separate elements rendered by the
  * page itself, not by this component.
+ *
+ * The sidebar scrolls independently of the page: `.article__sidebar` is
+ * sticky *and* height-capped with its own `overflow-y`, so a long TOC or
+ * card list gets its own scrollbar instead of stretching past the viewport.
  *
  * 最近の記事 renders thumbnail cards (cover + title + date), the same
  * stretched-link idiom as FeaturedRail/PostList — see the .side-card rules
  * in public.css. 関連記事 stays plain title+date links on purpose: that
  * markup is shared with the mobile `.related-tail` block via RelatedList.
  *
- * Server component: all four sections are static markup from server-fetched
+ * Server component: all three sections are static markup from server-fetched
  * props. The only client JS this pulls in is TocSpy, and only when there's
  * a TOC to spy on.
  */
@@ -30,15 +31,13 @@ export default function ArticleAside({
   headings,
   related,
   recent,
-  tags,
 }: {
   headings: Heading[];
   related: PostWithMeta[];
   recent: PostWithMeta[];
-  tags: SideTag[];
 }) {
   const hasToc = headings.length >= 2;
-  const hasAnything = hasToc || related.length > 0 || tags.length > 0 || recent.length > 0;
+  const hasAnything = hasToc || related.length > 0 || recent.length > 0;
   if (!hasAnything) return null;
 
   return (
@@ -52,21 +51,6 @@ export default function ArticleAside({
         ) : null}
 
         <RelatedList posts={related} headingId="side-related" />
-
-        {tags.length > 0 ? (
-          <nav className="side-block" aria-labelledby="side-tags" data-reveal>
-            <h2 className="label" id="side-tags">
-              話題
-            </h2>
-            <div className="side-tags">
-              {tags.map((t) => (
-                <Link key={t.id} className="side-tag" href={`/tag/${t.slug}`}>
-                  {t.name}
-                </Link>
-              ))}
-            </div>
-          </nav>
-        ) : null}
 
         {recent.length > 0 ? (
           <nav className="side-block" aria-labelledby="side-recent" data-reveal>

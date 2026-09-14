@@ -13,7 +13,6 @@ import { formatDate } from "@/lib/formatDate";
 import { getPublishedBySlug, listPublished, listRelated } from "@/lib/repo/posts";
 import { listForPost } from "@/lib/repo/replies";
 import { listApproved } from "@/lib/repo/comments";
-import { listWithCounts } from "@/lib/repo/tags";
 import { excerptFromBlocks, headingsFromBlocks } from "@/lib/blocks";
 
 export const revalidate = 300;
@@ -58,20 +57,14 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const post = await getPublishedBySlug(slug);
   if (!post) notFound();
 
-  const [replies, comments, related, recentRaw, allTags] = await Promise.all([
+  const [replies, comments, related, recentRaw] = await Promise.all([
     listForPost(post.id),
     listApproved(post.id),
     listRelated(post.id, 4),
     listPublished(8),
-    listWithCounts(),
   ]);
 
   const headings = headingsFromBlocks(post.contentJson);
-
-  // 話題 excludes this post's own tags — they're already shown in
-  // .article__meta above, so repeating them in the sidebar would be noise.
-  const postTagIds = new Set(post.tags.map((t) => t.id));
-  const sideTags = allTags.filter((t) => !postTagIds.has(t.id)).slice(0, 10);
 
   // 最近の記事 excludes this post and anything already surfaced as 関連記事.
   const relatedIds = new Set(related.map((p) => p.id));
@@ -138,7 +131,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         <RelatedList posts={related} headingId="related-tail-heading" className="related-tail" />
       </div>
 
-      <ArticleAside headings={headings} related={related} recent={recent} tags={sideTags} />
+      <ArticleAside headings={headings} related={related} recent={recent} />
     </article>
   );
 }

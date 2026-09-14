@@ -844,8 +844,17 @@ a.blog-card__tag:focus-visible {
    .article__toc-m and .related-tail (their mobile equivalents) take over. */
 .article__sidebar {
   --sidebar-top: 98px; /* ~78px header height + 20px breathing room */
+  --sidebar-bottom-gap: 24px;
   position: sticky;
   top: var(--sidebar-top);
+  /* Scrolls independently of the page: capped to the viewport space below
+     the sticky offset, so a long TOC or card list gets its own scrollbar
+     instead of pushing the sidebar past the bottom of the screen.
+     overscroll-behavior stops that scroll from chaining into the page once
+     the reader hits either end of it. */
+  max-height: calc(100vh - var(--sidebar-top) - var(--sidebar-bottom-gap));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -935,21 +944,6 @@ a.blog-card__tag:focus-visible {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-.side-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.side-tag {
-  color: var(--ink-2);
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  padding: 0.3rem 0.8rem;
-}
-.side-tag:hover {
-  border-color: var(--rule-strong);
-  color: var(--ink);
 }
 .article__toc-m {
   margin-bottom: 2.5rem;
