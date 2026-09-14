@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import type { PostWithMeta } from "@/lib/repo/posts";
 import { formatDate } from "@/lib/formatDate";
+import { useReveal } from "@/lib/useReveal";
 
 const GRAPHIC_TONES = ["cream", "aqua", "green"] as const;
 
@@ -17,45 +17,12 @@ const GRAPHIC_TONES = ["cream", "aqua", "green"] as const;
  * scrapbook feel — see design_handoff_blog_redesign/README.md.
  */
 export default function PostList({ posts }: { posts: PostWithMeta[] }) {
-  const cardRefs = useRef(new Map<number, HTMLLIElement>());
-
   // Re-runs whenever the (possibly filtered) post list changes, so cards
   // that appear after a search/tag filter still get observed — the design
-  // reference only wires this up once on mount and misses that case.
-  // Skipped entirely under prefers-reduced-motion rather than left to the
-  // CSS override, so no observer work happens for a state no one will see.
-  //
-  // Gating re-observation on the DOM class (not a ref that outlives one
-  // effect run) matters under React's dev-mode double-invoke: a throwaway
-  // first mount's observer gets disconnected by its cleanup before its
-  // (async) initial callback can fire, and only the second mount's observer
-  // sticks around — a ref-based "already handled" guard would have wrongly
-  // skipped that survivor because the first pass already marked it done.
-  useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("is-visible");
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.12 },
-    );
-
-    posts.forEach((p, i) => {
-      const el = cardRefs.current.get(p.id);
-      if (!el || el.classList.contains("is-visible")) return;
-      el.style.transitionDelay = `${(i % 12) * 0.06}s`;
-      el.classList.add("pre-reveal");
-      observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [posts]);
+  // reference only wires this up once on mount and misses that case. See
+  // src/lib/useReveal.ts for the reduced-motion and dev-double-invoke
+  // details this depends on.
+  const listRef = useReveal<HTMLUListElement>([posts]);
 
   if (posts.length === 0) {
     return (
@@ -69,7 +36,7 @@ export default function PostList({ posts }: { posts: PostWithMeta[] }) {
   let drawingSeen = 0;
 
   return (
-    <ul className="blog-grid">
+    <ul className="blog-grid" ref={listRef}>
       {posts.map((p, i) => {
         const isHero = i === 0;
         const tag = p.tags[0]?.name ?? null;
@@ -81,28 +48,24 @@ export default function PostList({ posts }: { posts: PostWithMeta[] }) {
           drawingSeen += 1;
         }
 
+        // Tilt travels as a custom property, not `transform` directly:
+        // the reveal states in public.css compose their own `transform`
+        // (translateY/scale) and need to fold rotate(var(--tilt)) in
+        // alongside it. An inline `transform` here would win over the
+        // stylesheet outright and silently cancel the reveal's motion.
         const style: CSSProperties = {
           gridColumn: `span ${isHero ? 2 : 1}`,
           gridRow: `span ${isHero ? 3 : 2}`,
-          transform: tilt ? `rotate(${tilt}deg)` : undefined,
+          ...(tilt ? ({ "--tilt": `${tilt}deg` } as CSSProperties) : null),
         };
 
-        const cardClass = (
+        const cardClass =
           p.kind === "graphic"
             ? `blog-card blog-card--graphic blog-card--graphic-${GRAPHIC_TONES[i % GRAPHIC_TONES.length]}`
-            : `blog-card blog-card--${p.kind}`
-        ) + " reveal";
+            : `blog-card blog-card--${p.kind}`;
 
         return (
-          <li
-            key={p.id}
-            ref={(el) => {
-              if (el) cardRefs.current.set(p.id, el);
-              else cardRefs.current.delete(p.id);
-            }}
-            className={cardClass}
-            style={style}
-          >
+          <li key={p.id} data-reveal className={cardClass} style={style}>
             <Link href={`/p/${p.slug}`} className="blog-card__link">
               {p.kind === "graphic" ? (
                 <>
