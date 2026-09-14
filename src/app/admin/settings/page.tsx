@@ -1,6 +1,7 @@
 import { getSettings } from "@/lib/repo/settings";
 import { saveSettingsAction } from "@/app/actions/settings";
 import { requireAuthor } from "@/lib/auth/session";
+import ImageField from "@/components/admin/ImageField";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +67,20 @@ export default async function SettingsPage() {
           ひとこと
         </label>
         <input id="tagline" name="tagline" defaultValue={s.tagline} maxLength={120} />
+
+        <ImageField
+          name="heroImageUrl"
+          label="ホームのイラスト（デスクトップ）"
+          defaultValue={s.heroImageUrl}
+          hint="空欄のときは最初から入っているイラストを表示します"
+        />
+
+        <ImageField
+          name="heroImageMobileUrl"
+          label="ホームのイラスト（スマホ）"
+          defaultValue={s.heroImageMobileUrl}
+          hint="空欄のときはデスクトップと同じものを表示します"
+        />
 
         <label className="label" htmlFor="aboutMd">
           About のテキスト

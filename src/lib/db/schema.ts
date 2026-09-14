@@ -236,6 +236,10 @@ export const siteSettings = pgTable("site_settings", {
   /** Narrow-viewport override for `bannerTitle`. Empty means "use the resolved banner title". */
   bannerTitleMobile: text("banner_title_mobile").notNull().default(""),
   tagline: text("tagline").notNull().default(""),
+  /** Home hero illustration. Empty means the committed /hero-illustration.jpg. */
+  heroImageUrl: text("hero_image_url").notNull().default(""),
+  /** Narrow-viewport override for heroImageUrl. Empty means "use the resolved desktop hero". */
+  heroImageMobileUrl: text("hero_image_mobile_url").notNull().default(""),
   aboutMd: text("about_md").notNull().default(""),
   /**
    * Unused leftover from a removed home-page "rails" feature (curated post

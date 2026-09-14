@@ -1,13 +1,35 @@
+import { getImageProps } from "next/image";
 import BlogBrowser from "@/components/BlogBrowser";
 import HeroParallax from "@/components/HeroParallax";
 import { listPublished } from "@/lib/repo/posts";
+import { getSettings, heroImages } from "@/lib/repo/settings";
 
 export const revalidate = 300;
+
+/** Matches the single existing breakpoint in public.css (`@media (max-width: 768px)`). */
+const MOBILE_MEDIA = "(max-width: 768px)";
 
 export default async function HomePage() {
   // A blog this size fits comfortably in one request; past a few hundred
   // posts this should move to server-side filtering with URL params instead.
   const raw = await listPublished(1000);
+
+  const hero = heroImages(await getSettings());
+  const heroCommon = {
+    alt: "",
+    fill: true as const,
+    sizes: "100vw",
+    priority: true as const,
+    className: "blog-hero__img",
+  };
+  const { props: heroImgProps } = getImageProps({ ...heroCommon, src: hero.wide });
+  // Desktop and mobile can resolve to the same URL (nothing uploaded, or the
+  // mobile field is empty and inherits the desktop one) — skip the <source>
+  // entirely then so there's only ever one candidate to pick from.
+  const heroNarrowSrcSet =
+    hero.narrow === hero.wide
+      ? undefined
+      : getImageProps({ ...heroCommon, src: hero.narrow }).props.srcSet;
 
   // BlogBrowser is a client component, so every field here is serialized to
   // the browser. `contentJson` is the raw BlockNote body — multiple KB per
@@ -19,7 +41,11 @@ export default async function HomePage() {
   return (
     <>
       <section className="blog-hero">
-        <HeroParallax src="/hero-illustration.jpg" alt="" />
+        <HeroParallax
+          imgProps={heroImgProps}
+          narrowSrcSet={heroNarrowSrcSet}
+          narrowMedia={MOBILE_MEDIA}
+        />
         <svg
           className="blog-hero__divider"
           viewBox="0 0 1200 90"
