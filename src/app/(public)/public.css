@@ -1092,7 +1092,11 @@ a.blog-card__tag:focus-visible {
     font-size: 12px;
   }
   .blog-hero {
-    --header-h: 64px;
+    /* 36px inner padding + the 44px tap-target min-height forced onto
+       .site-header__logo below — must track the header's real rendered
+       height or a gap of page background shows above it (see the comment
+       on .blog-hero above). */
+    --header-h: 80px;
     padding: calc(var(--header-h) + 46px) 20px 40px;
     min-height: 100vh;
   }
