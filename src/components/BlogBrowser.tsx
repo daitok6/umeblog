@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import PostList from "@/components/PostList";
 import type { PostWithMeta } from "@/lib/repo/posts";
+import { useReveal } from "@/lib/useReveal";
 
 /**
  * Instant client-side search + filters over the full published list.
@@ -81,9 +82,11 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
     setTag(null);
   }
 
+  const revealRef = useReveal<HTMLDivElement>([filtered]);
+
   return (
-    <div className="blog-browser">
-      <div className="blog-filters">
+    <div className="blog-browser" ref={revealRef}>
+      <div className="blog-filters" data-reveal>
         <div className="blog-filters__row">
           <label className="visually-hidden" htmlFor="blog-search">
             記事を検索
@@ -136,13 +139,13 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
         ) : null}
       </div>
 
-      <p className="blog-count" aria-live="polite">
+      <p className="blog-count" data-reveal aria-live="polite">
         {filtered.length} 本
       </p>
 
       {hasPopular ? (
         <>
-          <h2 className="blog-section-heading">
+          <h2 className="blog-section-heading" data-reveal>
             人気<span className="blog-section-heading__label">popular</span>
           </h2>
           <PostList posts={popularPosts} />
@@ -150,7 +153,7 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
       ) : null}
 
       {posts.length > 0 ? (
-        <h2 className="blog-section-heading">
+        <h2 className="blog-section-heading" data-reveal>
           最新<span className="blog-section-heading__label">latest</span>
         </h2>
       ) : null}

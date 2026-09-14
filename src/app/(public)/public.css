@@ -10,8 +10,9 @@
 }
 
 /* 小生 brand kit: remap the shared design tokens for the public site only —
-   admin never wraps in .public-shell, so it keeps its current monochrome
-   look untouched. See design_handoff_blog_redesign/README.md. */
+   admin never wraps in .public-shell, so it keeps its own look untouched.
+   See design_handoff_blog_redesign/README.md. Public is light-only by
+   design; there is no dark variant of these values. */
 .public-shell .container {
   max-width: 1280px;
 }
@@ -49,12 +50,9 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: var(--ground);
-  border-bottom: 1px solid var(--rule);
-  transition:
-    transform 0.25s ease,
-    background 0.25s ease,
-    border-color 0.25s ease;
+  background: transparent;
+  border-bottom: none;
+  transition: transform 0.25s ease;
 }
 .site-header--hidden {
   transform: translateY(-100%);
@@ -64,16 +62,19 @@
     transition: none;
   }
 }
-
-/* /blog only: float transparently over the full-bleed hero photo until the
-   page scrolls, then fall back to the normal solid bar above. The header
-   stays `position: sticky` the whole time (never switches layout model) so
-   there is no jump at the handoff — see .blog-hero's negative margin, which
-   is what actually pulls the photo up behind this bar. */
-.site-header--overlay {
-  background: transparent;
-  border-bottom-color: transparent;
+.site-header__logo,
+.site-header__nav .nav-link {
+  text-shadow:
+    0 1px 10px var(--shosei-cream),
+    0 0 4px var(--shosei-cream);
 }
+
+/* Whenever the full-bleed hero photo (`/`) is still behind the bar, switch
+   the words to cream with a dark shadow tuned for the photo instead of the
+   cream-halo shadow used everywhere else. The header stays `position:
+   sticky` the whole time (never switches layout model) so there is no jump
+   at the handoff — see .blog-hero's negative margin, which is what actually
+   pulls the photo up behind this bar. */
 .site-header--overlay .site-header__logo,
 .site-header--overlay .site-header__nav .nav-link {
   color: var(--shosei-cream);
@@ -221,6 +222,39 @@
 }
 .blog-hero__copy {
   max-width: 520px;
+  /* Drifts up and fades as the reader scrolls past — --hero-scroll is
+     written straight onto .blog-hero by HeroParallax's rAF loop. The
+     var(...,0) fallback is what keeps this at rest when JS never runs. */
+  transform: translateY(calc(var(--hero-scroll, 0) * -0.12px));
+  opacity: clamp(0, calc(1 - var(--hero-scroll, 0) / 460), 1);
+}
+.blog-hero__tagline,
+.blog-hero__title,
+.blog-hero__kana {
+  /* Entrance stagger, pure CSS so it plays with no JS at all. Reduced
+     motion is handled by the global kill-switch in globals.css, which
+     forces animation-duration to ~0 — the `both` fill mode then lands
+     everything at its end state instantly instead of stuck at 0. */
+  animation: hero-rise 0.8s ease both;
+}
+.blog-hero__tagline {
+  animation-delay: 0.05s;
+}
+.blog-hero__title {
+  animation-delay: 0.16s;
+}
+.blog-hero__kana {
+  animation-delay: 0.3s;
+}
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .blog-hero__tagline {
   font-family: var(--f-hand);
@@ -272,6 +306,7 @@
 }
 .blog-card {
   overflow: hidden;
+  transform: rotate(var(--tilt, 0deg));
 }
 .blog-card__link {
   display: flex;
@@ -503,25 +538,32 @@
   margin-left: 8px;
 }
 
-/* Cards start hidden and rise in as they cross the viewport (see
-   BlogBrowser/PostList's IntersectionObserver). Reduced motion drops
-   straight to the end state — both here and in JS, which skips observing
-   entirely, so a slow first paint can never strand a card at opacity 0. */
+/* Elements start hidden and rise in as they cross the viewport (see
+   src/lib/useReveal.ts and RevealScope.tsx). Reduced motion drops straight
+   to the end state — both here and in JS, which skips observing entirely,
+   so a slow first paint can never strand an element at opacity 0.
+   rotate(var(--tilt)) is folded into both states so a tilted card (see
+   PostList) keeps its tilt through the rise instead of the reveal's own
+   transform overwriting it. */
 .reveal.pre-reveal {
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(28px) scale(0.985) rotate(var(--tilt, 0deg));
+  filter: blur(3px);
   transition:
     opacity 0.7s ease,
-    transform 0.7s ease;
+    transform 0.7s ease,
+    filter 0.7s ease;
 }
 .reveal.pre-reveal.is-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1) rotate(var(--tilt, 0deg));
+  filter: blur(0);
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal.pre-reveal {
     opacity: 1 !important;
-    transform: none !important;
+    transform: rotate(var(--tilt, 0deg)) !important;
+    filter: none !important;
     transition: none !important;
   }
 }
@@ -547,6 +589,28 @@
 }
 
 /* ── Article ────────────────────────────────────────────── */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 50;
+  background: transparent;
+  pointer-events: none;
+}
+.reading-progress__bar {
+  height: 100%;
+  width: 100%;
+  background: var(--shosei-red);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reading-progress {
+    display: none;
+  }
+}
 .article {
   padding-block: 64px 96px;
 }

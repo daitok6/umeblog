@@ -8,6 +8,7 @@
    ============================================================ */
 
 :root {
+  color-scheme: light;
   --ground: #f2f2f2;
   --ink: #000000;
   --ink-2: #333333;
@@ -47,37 +48,6 @@
   --f-noto: var(--font-noto-sans-jp), var(--font-zen-kaku), "Hiragino Kaku Gothic ProN",
     "Yu Gothic", Meiryo, sans-serif;
   --f-hand: var(--font-kalam), cursive;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ground: #0e0e0e;
-    --ink: #f2f2f2;
-    --ink-2: #d6d6d6;
-    --muted: #9a9a9a;
-    --faint: #6b6b6b;
-    --rule: #2e2e2e;
-    --rule-strong: #f2f2f2;
-    --surface: #161616;
-    --sunken: #1c1c1c;
-    --ok: #6fd096;
-    --warn: #e0bb55;
-    --bad: #e8836f;
-  }
-}
-:root[data-theme="dark"] {
-  --ground: #0e0e0e;
-  --ink: #f2f2f2;
-  --ink-2: #d6d6d6;
-  --muted: #9a9a9a;
-  --faint: #6b6b6b;
-  --rule: #2e2e2e;
-  --rule-strong: #f2f2f2;
-  --surface: #161616;
-  --sunken: #1c1c1c;
-  --ok: #6fd096;
-  --warn: #e0bb55;
-  --bad: #e8836f;
 }
 
 *,

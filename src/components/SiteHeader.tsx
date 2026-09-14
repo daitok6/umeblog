@@ -6,26 +6,29 @@ import { useEffect, useRef, useState } from "react";
 import ResponsiveName from "@/components/ResponsiveName";
 
 /**
- * Sticky, auto-hiding top bar: hidden on scroll-down, shown on any
- * scroll-up, and always shown near the top of the page.
+ * Sticky, auto-hiding, always-transparent top bar: hidden on scroll-down,
+ * shown on any scroll-up, and always shown near the top of the page. There
+ * is no background at any scroll position — only the words, so legibility
+ * comes from `text-shadow` (see public.css) rather than a solid bar.
  *
  * The scroll handler is `{ passive: true }` and coalesced through a single
  * in-flight `requestAnimationFrame`, so at most one state update happens per
  * frame no matter how many scroll events fire.
  *
- * `/` gets one extra treatment: its hero is a full-bleed photo the
- * header should float over transparently, then turn solid the moment the
- * page scrolls (same `scrolled` flag already tracked below) — so only that
- * route ever sees `site-header--overlay`, and every other page is
- * untouched.
+ * One extra treatment: whenever a `.blog-hero` (the full-bleed photo on `/`)
+ * is still behind the bar, the words switch to a cream/dark-shadow
+ * combination tuned for the photo instead of the cream page background.
+ * This is keyed on the hero's own rect, not on scroll position or route, so
+ * it stays correct the moment scrolling clears the hero — not just once any
+ * scrolling has happened.
  */
 export default function SiteHeader({ wide, narrow }: { wide: string; narrow: string }) {
   const pathname = usePathname();
-  const isBlogHero = pathname === "/";
   const [hidden, setHidden] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [overHero, setOverHero] = useState(pathname === "/");
   const lastY = useRef(0);
   const rafId = useRef<number | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     lastY.current = window.scrollY;
@@ -33,7 +36,10 @@ export default function SiteHeader({ wide, narrow }: { wide: string; narrow: str
     const measure = () => {
       rafId.current = null;
       const y = window.scrollY;
-      setScrolled(y > 0);
+
+      const hero = document.querySelector(".blog-hero");
+      const headerH = headerRef.current?.offsetHeight ?? 0;
+      setOverHero(!!hero && hero.getBoundingClientRect().bottom > headerH);
 
       if (y <= 80) {
         setHidden(false);
@@ -51,20 +57,21 @@ export default function SiteHeader({ wide, narrow }: { wide: string; narrow: str
       }
     };
 
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", onScroll);
       if (rafId.current != null) cancelAnimationFrame(rafId.current);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <header
+      ref={headerRef}
       className={[
         "site-header",
-        scrolled ? "site-header--scrolled" : "",
         hidden ? "site-header--hidden" : "",
-        isBlogHero && !scrolled ? "site-header--overlay" : "",
+        overHero ? "site-header--overlay" : "",
       ]
         .filter(Boolean)
         .join(" ")}

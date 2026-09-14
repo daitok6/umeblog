@@ -4,6 +4,8 @@ import Link from "next/link";
 import BlockRenderer from "@/components/BlockRenderer";
 import CommentForm from "@/components/CommentForm";
 import ReadTracker from "@/components/ReadTracker";
+import ReadingProgress from "@/components/ReadingProgress";
+import RevealScope from "@/components/RevealScope";
 import { formatDate } from "@/lib/formatDate";
 import { getPublishedBySlug } from "@/lib/repo/posts";
 import { listForPost } from "@/lib/repo/replies";
@@ -60,16 +62,22 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   return (
     <article className="container article">
       <ReadTracker slug={post.slug} />
-      <div className="article__head">
+      <ReadingProgress />
+      <RevealScope root=".article" />
+      <div className="article__head" data-reveal>
         <span className="article__serial serial">
           {post.serial != null ? String(post.serial).padStart(3, "0") : ""}
         </span>
         <h1 className="article__title">{post.title || "無題"}</h1>
       </div>
 
-      {post.lead ? <p className="article__lead">{post.lead}</p> : null}
+      {post.lead ? (
+        <p className="article__lead" data-reveal>
+          {post.lead}
+        </p>
+      ) : null}
 
-      <div className="article__meta">
+      <div className="article__meta" data-reveal>
         <span className="label">{formatDate(post.publishedAt)}</span>
         {post.tags.map((t) => (
           <Link key={t.id} className="label" href={`/tag/${t.slug}`}>
@@ -79,12 +87,12 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         {post.isTiny ? <span className="label">一枚</span> : null}
       </div>
 
-      <div className="prose">
+      <div className="prose" data-reveal>
         <BlockRenderer json={post.contentJson} />
       </div>
 
       {replies.length > 0 ? (
-        <section className="replies">
+        <section className="replies" data-reveal>
           <h2 className="label">往復</h2>
           {replies.map((r) => (
             <div key={r.id} className="reply">
@@ -95,7 +103,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         </section>
       ) : null}
 
-      <section className="comments">
+      <section className="comments" data-reveal>
         <h2 className="label">コメント（{comments.length}）</h2>
         {comments.map((c) => (
           <div key={c.id} className="comment">

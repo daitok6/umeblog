@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import ResponsiveName from "@/components/ResponsiveName";
+import RevealScope from "@/components/RevealScope";
 import { getSettings, bannerNames, siteNames } from "@/lib/repo/settings";
 import { listWithCounts } from "@/lib/repo/tags";
 import "./public.css";
@@ -28,14 +29,15 @@ export default async function PublicLayout({ children }: { children: React.React
       <SiteHeader wide={banner.wide} narrow={banner.narrow} />
       <main>{children}</main>
       <footer className="site-footer">
+        <RevealScope root=".site-footer" />
         <div className="container site-footer__inner">
-          <div className="site-footer__brand">
+          <div className="site-footer__brand" data-reveal>
             <span className="site-footer__logo">
               <ResponsiveName wide={site.wide} narrow={site.narrow} />
             </span>
             {settings.tagline ? <p className="site-footer__tagline">{settings.tagline}</p> : null}
           </div>
-          <nav className="site-footer__nav">
+          <nav className="site-footer__nav" data-reveal data-reveal-delay="0.08">
             {footerTags.length > 0 ? (
               footerTags.map((t) => (
                 <Link key={t.slug} href={`/tag/${t.slug}`}>
@@ -49,7 +51,7 @@ export default async function PublicLayout({ children }: { children: React.React
               </>
             )}
           </nav>
-          <div className="site-footer__meta">
+          <div className="site-footer__meta" data-reveal data-reveal-delay="0.16">
             <span className="site-footer__copyright">
               © {new Date().getFullYear()} <ResponsiveName wide={site.wide} narrow={site.narrow} />
             </span>
