@@ -13,7 +13,7 @@ import type { PartialBlock } from "@blocknote/core";
 import { ja } from "@blocknote/core/locales";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
-import { upload } from "@vercel/blob/client";
+import { uploadImage } from "@/lib/upload-client";
 import { isComposingEvent } from "@/lib/ime";
 import { savePostAction } from "@/app/actions/posts";
 import { AffiliateLinkBlock } from "@/components/admin/blocks/AffiliateLinkBlock";
@@ -78,28 +78,7 @@ export default function Editor({
     return undefined;
   }, [initialContent]);
 
-  const uploadFile = useCallback(async (file: File) => {
-    // The original goes straight to Blob storage from the browser, so a
-    // large phone photo never has to fit inside this app's own request-body
-    // limit. The server then pulls it back down to run it through sharp.
-    const blob = await upload(`incoming/${file.name}`, file, {
-      access: "public",
-      contentType: file.type,
-      handleUploadUrl: "/api/upload/token",
-    });
-
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ url: blob.url }),
-    });
-    if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as { error?: string } | null;
-      throw new Error(body?.error ?? "upload failed");
-    }
-    const json = (await res.json()) as { url: string };
-    return json.url;
-  }, []);
+  const uploadFile = useCallback(async (file: File) => uploadImage(file), []);
 
   const editor = useCreateBlockNote({
     schema,

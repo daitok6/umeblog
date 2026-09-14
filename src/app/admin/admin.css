@@ -578,6 +578,43 @@
   resize: vertical;
 }
 
+.image-field {
+  margin-bottom: 1rem;
+}
+.image-field__row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.image-field__preview {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+}
+.image-field__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.image-field__upload {
+  position: relative;
+  overflow: hidden;
+}
+.image-field__upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+.image-field__error {
+  color: var(--bad);
+  font-size: 13px;
+  margin: 0.4rem 0 0;
+}
+
 .rails-editor {
   display: flex;
   flex-direction: column;

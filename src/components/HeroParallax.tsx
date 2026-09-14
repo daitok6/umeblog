@@ -1,20 +1,32 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import Image from "next/image";
+import { useEffect, useRef, type ImgHTMLAttributes } from "react";
 
 /**
- * The /blog hero photo: scale and vertical offset grow with scroll depth,
- * same feel as the design reference. Skipped entirely under
+ * The home hero illustration: scale and vertical offset grow with scroll
+ * depth, same feel as the design reference. Skipped entirely under
  * `prefers-reduced-motion` — no listener attached, not just a no-op one —
- * so the image simply sits at its resting `scale(1.4)` (set in CSS).
+ * so the image simply sits at its resting `scale(1)` (set in CSS).
  *
  * The same rAF loop also publishes `--hero-scroll` (raw scrollY) onto the
  * `.blog-hero` section, which `.blog-hero__copy` in public.css reads to
  * drift up and fade as the reader scrolls past — one listener drives both
  * effects instead of adding a second.
+ *
+ * `imgProps` / `narrowSrcSet` come from `next/image`'s `getImageProps()`,
+ * computed server-side in page.tsx so a desktop and a mobile illustration
+ * (set independently in /admin/settings) can each get their own optimized
+ * srcSet via a plain `<picture>` — art direction, not just a CSS crop.
  */
-export default function HeroParallax({ src, alt }: { src: string; alt: string }) {
+export default function HeroParallax({
+  imgProps,
+  narrowSrcSet,
+  narrowMedia,
+}: {
+  imgProps: ImgHTMLAttributes<HTMLImageElement>;
+  narrowSrcSet?: string;
+  narrowMedia: string;
+}) {
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
@@ -44,14 +56,10 @@ export default function HeroParallax({ src, alt }: { src: string; alt: string })
   }, []);
 
   return (
-    <Image
-      ref={imgRef}
-      src={src}
-      alt={alt}
-      fill
-      priority
-      sizes="100vw"
-      className="blog-hero__img"
-    />
+    <picture>
+      {narrowSrcSet && <source media={narrowMedia} srcSet={narrowSrcSet} />}
+      {/* eslint-disable-next-line @next/next/no-img-element -- these are next/image's own generated props, from getImageProps() */}
+      <img ref={imgRef} {...imgProps} />
+    </picture>
   );
 }

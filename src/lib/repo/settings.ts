@@ -11,6 +11,8 @@ export async function getSettings(): Promise<schema.SiteSettings> {
     titleMobile: "",
     bannerTitleMobile: "",
     tagline: "日々を綴るブログ",
+    heroImageUrl: "",
+    heroImageMobileUrl: "",
     aboutMd: "",
     railsJson: "",
   };
@@ -33,4 +35,12 @@ export function bannerNames(s: schema.SiteSettings): { wide: string; narrow: str
 /** Wide (default) vs narrow-viewport site name. Visible UI only — metadata, OG and RSS keep `title`. */
 export function siteNames(s: schema.SiteSettings): { wide: string; narrow: string } {
   return { wide: s.title, narrow: s.titleMobile || s.title };
+}
+
+const DEFAULT_HERO = "/hero-illustration.jpg";
+
+/** Wide (default) vs narrow-viewport home hero illustration. Same inherit-when-empty convention. */
+export function heroImages(s: schema.SiteSettings): { wide: string; narrow: string } {
+  const wide = s.heroImageUrl || DEFAULT_HERO;
+  return { wide, narrow: s.heroImageMobileUrl || wide };
 }
