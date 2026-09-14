@@ -491,6 +491,40 @@
   cursor: pointer;
   min-height: 40px;
 }
+/* Same custom checkbox as .ticket-form__check: the box itself is a
+   thumb-sized 40px (padding alone doesn't grow a checkbox's hit area in
+   Chromium), with a small centered ::before for the visible mark. */
+.simple-toggle input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  position: relative;
+  cursor: pointer;
+  flex: none;
+}
+.simple-toggle input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+}
+.simple-toggle input[type="checkbox"]:checked::before {
+  background: var(--ink);
+}
+.simple-toggle input[type="checkbox"]:focus-visible::before {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
 
 /* Simple mode hides the block furniture rather than swapping in a second
    editor — one code path, one set of IME behaviours to keep correct. */

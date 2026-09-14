@@ -108,6 +108,24 @@ export async function deletePostAction(id: number): Promise<void> {
   redirect("/admin/posts");
 }
 
+/** Thumbnail picker in the editor sidebar. `null` clears it back to a text-only card. */
+export async function setCoverAction(id: number, imageId: number | null): Promise<void> {
+  await requireAuthor();
+  if (imageId != null && !Number.isInteger(imageId)) return;
+  await postsRepo.updatePost(id, { coverImageId: imageId });
+  revalidatePath("/");
+  revalidatePath("/admin/posts");
+  revalidatePath("/p/[slug]", "page");
+}
+
+/** The home page's 注目 rail: author-flagged, published, newest first — no ranking. */
+export async function setFeaturedAction(id: number, on: boolean): Promise<void> {
+  await requireAuthor();
+  await postsRepo.updatePost(id, { featured: on });
+  revalidatePath("/");
+  revalidatePath("/admin/posts");
+}
+
 /** 返事 — any signed-in trusted reader may answer a post. */
 export async function addReplyAction(postId: number, body: string): Promise<void> {
   const user = await requireUserOrRedirect();

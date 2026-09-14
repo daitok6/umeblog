@@ -226,7 +226,10 @@ export async function createDraft(authorId: number, isTiny = false): Promise<num
 export async function updatePost(
   id: number,
   patch: Partial<
-    Pick<schema.Post, "title" | "lead" | "contentJson" | "coverImageId" | "slug" | "isTiny" | "kind">
+    Pick<
+      schema.Post,
+      "title" | "lead" | "contentJson" | "coverImageId" | "slug" | "isTiny" | "kind" | "featured"
+    >
   >,
 ): Promise<void> {
   await db.update(posts).set({ ...patch, updatedAt: Date.now() }).where(eq(posts.id, id));

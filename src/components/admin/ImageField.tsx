@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { uploadImage } from "@/lib/upload-client";
+import { uploadImage, uploadImageRow } from "@/lib/upload-client";
 
 type Props = {
   name: string;
@@ -9,6 +9,13 @@ type Props = {
   defaultValue: string;
   /** Shown under the field, e.g. "空欄のときは..." */
   hint?: string;
+  /**
+   * When given, the field also reports the uploaded image's row id (not just
+   * its URL) — for callers that need to store `coverImageId`, not just render
+   * a picture. The hidden input still carries the URL either way, so a plain
+   * `<form action={...}>` reading `formData.get(name)` keeps working.
+   */
+  onPick?: (value: { url: string; id: number } | null) => void;
 };
 
 /**
@@ -16,7 +23,7 @@ type Props = {
  * settings page's server action reads `formData.get(name)`, so the actual
  * value lives in a hidden input rather than component state alone).
  */
-export default function ImageField({ name, label, defaultValue, hint }: Props) {
+export default function ImageField({ name, label, defaultValue, hint, onPick }: Props) {
   const [url, setUrl] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,12 +34,23 @@ export default function ImageField({ name, label, defaultValue, hint }: Props) {
     setUploading(true);
     setError(null);
     try {
-      setUrl(await uploadImage(file));
+      if (onPick) {
+        const row = await uploadImageRow(file);
+        setUrl(row.url);
+        onPick(row);
+      } else {
+        setUrl(await uploadImage(file));
+      }
     } catch {
       setError("アップロードに失敗しました");
     } finally {
       setUploading(false);
     }
+  }
+
+  function clear() {
+    setUrl("");
+    onPick?.(null);
   }
 
   return (
@@ -61,12 +79,7 @@ export default function ImageField({ name, label, defaultValue, hint }: Props) {
             />
           </label>
           {url && (
-            <button
-              type="button"
-              className="btn-sm"
-              disabled={uploading}
-              onClick={() => setUrl("")}
-            >
+            <button type="button" className="btn-sm" disabled={uploading} onClick={clear}>
               クリア
             </button>
           )}

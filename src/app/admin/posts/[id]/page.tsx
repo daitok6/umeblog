@@ -73,6 +73,8 @@ export default async function EditPostPage({
           slug={post.slug}
           serial={post.serial}
           publishAt={post.publishAt}
+          coverUrl={post.cover?.url ?? ""}
+          featured={post.featured}
         />
       </div>
 

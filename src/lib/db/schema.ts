@@ -71,6 +71,8 @@ export const posts = pgTable(
     kind: text("kind", { enum: ["photo", "graphic", "drawing"] })
       .notNull()
       .default("photo"),
+    /** Author-picked for the home page's 注目 rail. Newest-first there; no ranking, no score. */
+    featured: boolean("featured").notNull().default(false),
     /**
      * The one stored counter in this codebase — everything in stats.ts is
      * deliberately DERIVED rather than stored, but a view leaves no other
