@@ -900,6 +900,42 @@ a.blog-card__tag:focus-visible {
   display: block;
   margin-top: 0.2rem;
 }
+.side-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.side-card {
+  position: relative; /* anchor for .blog-card__link::after */
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  overflow: hidden; /* matches .blog-card; keeps the -2px focus outline inside */
+}
+.side-card__cover {
+  position: relative; /* required by next/image fill */
+  flex: 0 0 72px;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--sunken); /* doubles as the no-cover placeholder */
+}
+.side-card__cover img {
+  object-fit: cover;
+}
+.side-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0; /* lets the title actually wrap/clamp */
+}
+.side-card__title {
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .side-tags {
   display: flex;
   flex-wrap: wrap;
