@@ -44,7 +44,7 @@ export default async function PublicLayout({ children }: { children: React.React
               ))
             ) : (
               <>
-                <Link href="/blog">Blog</Link>
+                <Link href="/">Blog</Link>
                 <Link href="/about">About</Link>
               </>
             )}

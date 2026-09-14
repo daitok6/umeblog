@@ -21,10 +21,13 @@ test("visiting a post sends exactly one view beacon per session", async ({ page 
   await page.locator("button", { hasText: "公開する" }).click();
   await page.waitForURL("**/admin/posts");
 
-  await page.goto("/blog");
+  await page.goto("/");
   await page.locator("#blog-search").fill(marker);
   const firstRequest = page.waitForRequest("**/api/track");
-  await page.locator(".blog-card__link", { hasText: marker }).click();
+  // Scoped to the "最新" (latest) .blog-grid — BlogBrowser also shows a
+  // "人気" popular reel above it, which can (by design) still be showing
+  // this same brand-new post while the search debounce hasn't committed yet.
+  await page.locator(".blog-grid").last().locator(".blog-card__link", { hasText: marker }).click();
   await page.waitForURL(/\/p\//);
   await firstRequest;
 

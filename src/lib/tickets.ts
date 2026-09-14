@@ -3,7 +3,7 @@ import type { Ticket } from "@/lib/db/schema";
 /**
  * Editorial idea library — labels, ordering, and small parsers with no DB
  * dependency, so client components can import this directly (same shape as
- * src/lib/rails.ts / src/lib/sekki.ts).
+ * src/lib/sekki.ts).
  *
  * Nothing here escalates: priority reads as a warm suggestion ("いちおし" /
  * "いつか"), not a severity, and no status implies anything is overdue.

@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["sharp"],
+  // /blog used to be the archive page; the archive now lives at / (see
+  // src/app/(public)/page.tsx), so old links and bookmarks are sent there.
+  async redirects() {
+    return [{ source: "/blog", destination: "/", permanent: true }];
+  },
   images: {
     remotePatterns: [
       {

@@ -7,7 +7,7 @@ import { login, newPost } from "./helpers";
  * instead of erroring or listing everything.
  *
  * The header no longer carries a search box (see tests/blog.spec.ts for the
- * instant title/tag filter on /blog that replaced it); /search remains the
+ * instant title/tag filter on / that replaced it); /search remains the
  * one place that reaches into post bodies.
  */
 test("search finds a published post by body text", async ({ page }) => {

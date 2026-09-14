@@ -1,15 +1,12 @@
 import { getSettings } from "@/lib/repo/settings";
 import { saveSettingsAction } from "@/app/actions/settings";
 import { requireAuthor } from "@/lib/auth/session";
-import { listWithCounts } from "@/lib/repo/tags";
-import { parseRails } from "@/lib/rails";
-import RailsEditor from "@/components/admin/RailsEditor";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   await requireAuthor();
-  const [s, tags] = await Promise.all([getSettings(), listWithCounts()]);
+  const s = await getSettings();
 
   return (
     <div>
@@ -74,11 +71,6 @@ export default async function SettingsPage() {
           About のテキスト
         </label>
         <textarea id="aboutMd" name="aboutMd" defaultValue={s.aboutMd} maxLength={4000} />
-
-        <label className="label" style={{ marginTop: "8px" }}>
-          トップページの棚
-        </label>
-        <RailsEditor defaultRails={parseRails(s.railsJson)} tags={tags} />
 
         <button className="btn" type="submit" style={{ alignSelf: "flex-start" }}>
           保存する

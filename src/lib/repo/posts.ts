@@ -1,5 +1,4 @@
 import { cache } from "react";
-import type { RailConfig } from "@/lib/rails";
 import { db, schema } from "@/lib/db";
 import { and, desc, eq, ilike, inArray, isNotNull, lte, max, or, sql } from "drizzle-orm";
 
@@ -139,31 +138,6 @@ export async function listByTag(tagSlug: string, limit?: number): Promise<PostWi
     .$dynamic();
   if (limit != null) query = query.limit(limit);
   const rows = await query;
-  return decorate(rows.map((r) => r.p));
-}
-
-/** Home-page rail: newest reads first, straight off `views`. */
-export async function listMostViewed(limit = 12): Promise<PostWithMeta[]> {
-  const rows = await db
-    .select()
-    .from(posts)
-    .where(visible())
-    .orderBy(desc(posts.views), desc(posts.publishedAt))
-    .limit(limit);
-  return decorate(rows);
-}
-
-/** Home-page rail: posts with the most replies, ties broken by recency. */
-export async function listMostDiscussed(limit = 12): Promise<PostWithMeta[]> {
-  const rows = await db
-    .select({ p: posts, n: sql<number>`count(${replies.id})::int` })
-    .from(posts)
-    .innerJoin(replies, eq(replies.postId, posts.id))
-    .where(visible())
-    .groupBy(posts.id)
-    .having(sql`count(${replies.id}) > 0`)
-    .orderBy(desc(sql`count(${replies.id})`), desc(posts.publishedAt))
-    .limit(limit);
   return decorate(rows.map((r) => r.p));
 }
 
@@ -311,24 +285,4 @@ export async function unpublish(id: number): Promise<void> {
 
 export async function deletePost(id: number): Promise<void> {
   await db.delete(posts).where(eq(posts.id, id));
-}
-
-/**
- * Dispatches a single home-page rail's config to the query that fills it.
- * Kept here (rather than in rails.ts) since it needs the `db` connection;
- * rails.ts stays a plain, importable-from-anywhere module.
- */
-export async function loadRail(rail: RailConfig, limit = 12): Promise<PostWithMeta[]> {
-  switch (rail.kind) {
-    case "recent":
-      return listPublished(limit);
-    case "viewed":
-      return listMostViewed(limit);
-    case "discussed":
-      return listMostDiscussed(limit);
-    case "tag":
-      return rail.tag ? listByTag(rail.tag, limit) : [];
-    default:
-      return [];
-  }
 }
