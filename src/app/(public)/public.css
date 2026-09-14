@@ -28,6 +28,17 @@
   --sunken: var(--shosei-cream);
   --f-body: var(--f-noto);
   --inset: 32px;
+  /* The 70/30 hero/rail split below is keyed off this, not a bare 100vh —
+     `100vh` on a phone includes space the browser chrome covers, so a
+     literal 70% of it can sit under the address bar. `100svh` is the
+     visible viewport; the plain value is only the fallback for browsers
+     without it. */
+  --fold: 100vh;
+}
+@supports (height: 100svh) {
+  .public-shell {
+    --fold: 100svh;
+  }
 }
 .public-shell h1,
 .public-shell h2,
@@ -190,6 +201,12 @@
   display: flex;
   align-items: flex-end;
 }
+/* Only applied when there's something to show below it (see page.tsx) — a
+   blog with nothing marked 注目 keeps the full-height hero unchanged. */
+.blog-hero--split {
+  min-height: calc(var(--fold) * 0.7);
+  padding-bottom: 48px;
+}
 .blog-hero__img {
   position: absolute;
   inset: 0;
@@ -283,6 +300,117 @@
   font-size: 14px;
   letter-spacing: 0.35em;
   color: var(--shosei-aqua);
+}
+
+/* ── Featured rail ──────────────────────────────────────────
+   The hero's other 30% (see .blog-hero--split above). A plain scrolling
+   list — the arrows below just call scrollBy() on the same track a swipe
+   or the keyboard would move, so there's one source of truth for position
+   and nothing to keep in sync. Never auto-advances. */
+.featured-rail {
+  min-height: calc(var(--fold) * 0.3);
+  background: var(--shosei-cream);
+  display: flex;
+  align-items: center;
+}
+.featured-rail__inner {
+  width: 100%;
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+.featured-rail__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 16px;
+}
+.featured-rail__head .blog-section-heading {
+  margin: 0;
+}
+.featured-rail__nav {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.featured-rail__arrow {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--shosei-blue);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.featured-rail__arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.featured-rail__track {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px;
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.featured-rail__track::-webkit-scrollbar {
+  display: none;
+}
+.featured-rail__track:focus-visible {
+  outline: 2px solid var(--shosei-blue);
+  outline-offset: 4px;
+}
+.featured-card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  /* ~2.5 cards peek on a wide screen, ~1.15 on a phone — enough of the
+     next card in view that the rail reads as scrollable at a glance. */
+  width: clamp(240px, 38vw, 320px);
+}
+.featured-card__link {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  height: 100%;
+  min-height: 88px;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.featured-card__cover {
+  position: relative;
+  flex: 0 0 96px;
+  background: var(--sunken);
+}
+.featured-card__cover img {
+  object-fit: cover;
+}
+.featured-card__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 12px 10px 0;
+  min-width: 0;
+}
+.featured-card__title {
+  font-family: var(--f-jp);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ── Post grid ──────────────────────────────────────────── */
@@ -788,6 +916,10 @@
     --header-h: 64px;
     padding: calc(var(--header-h) + 46px) 20px 40px;
     min-height: 100vh;
+  }
+  .blog-hero--split {
+    min-height: calc(var(--fold) * 0.7);
+    padding-bottom: 28px;
   }
   .blog-hero__copy {
     max-width: 100%;

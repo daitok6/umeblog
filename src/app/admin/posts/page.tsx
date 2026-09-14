@@ -66,6 +66,7 @@ export default async function AdminPostsPage({
               <td>
                 <Link href={`/admin/posts/${p.id}`}>{p.title || "無題"}</Link>
                 {p.isTiny ? <span className="label"> 一枚</span> : null}
+                {p.featured ? <span className="label"> 注目</span> : null}
               </td>
               <td>
                 <span className={`status status--${p.status}`}>{STATUS_LABEL[p.status]}</span>

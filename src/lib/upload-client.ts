@@ -10,6 +10,15 @@ import { upload } from "@vercel/blob/client";
  * server then pulls it back down to run it through sharp.
  */
 export async function uploadImage(file: File): Promise<string> {
+  return (await uploadImageRow(file)).url;
+}
+
+/**
+ * Same upload round-trip as `uploadImage`, but keeps the stored image row's
+ * id — needed wherever a caller has to reference the row itself (a post's
+ * `coverImageId`), not just render the URL.
+ */
+export async function uploadImageRow(file: File): Promise<{ url: string; id: number }> {
   const blob = await upload(`incoming/${file.name}`, file, {
     access: "public",
     contentType: file.type,
@@ -25,6 +34,5 @@ export async function uploadImage(file: File): Promise<string> {
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? "upload failed");
   }
-  const json = (await res.json()) as { url: string };
-  return json.url;
+  return (await res.json()) as { url: string; id: number };
 }

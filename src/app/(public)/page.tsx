@@ -1,5 +1,6 @@
 import { getImageProps } from "next/image";
 import BlogBrowser from "@/components/BlogBrowser";
+import FeaturedRail from "@/components/FeaturedRail";
 import HeroParallax from "@/components/HeroParallax";
 import { listPublished } from "@/lib/repo/posts";
 import { getSettings, heroImages } from "@/lib/repo/settings";
@@ -38,9 +39,13 @@ export default async function HomePage() {
   // ignored. Full body search stays server-side at `/search`.
   const posts = raw.map((p) => ({ ...p, contentJson: "" }));
 
+  // Author-flagged in PostSidebar's 注目 toggle. `posts` is already newest
+  // first (listPublished orders by publishedAt), so no separate sort here.
+  const featured = posts.filter((p) => p.featured).slice(0, 8);
+
   return (
     <>
-      <section className="blog-hero">
+      <section className={`blog-hero${featured.length > 0 ? " blog-hero--split" : ""}`}>
         <HeroParallax
           imgProps={heroImgProps}
           narrowSrcSet={heroNarrowSrcSet}
@@ -65,6 +70,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      <FeaturedRail posts={featured} />
       <div className="container">
         <BlogBrowser posts={posts} />
       </div>

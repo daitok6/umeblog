@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import ImageField from "@/components/admin/ImageField";
 import {
   publishAction,
   scheduleAction,
@@ -9,6 +10,8 @@ import {
   backToDraftAction,
   unpublishAction,
   deletePostAction,
+  setCoverAction,
+  setFeaturedAction,
 } from "@/app/actions/posts";
 
 type Props = {
@@ -17,6 +20,8 @@ type Props = {
   slug: string;
   serial: number | null;
   publishAt: number | null;
+  coverUrl: string;
+  featured: boolean;
 };
 
 const STATUS_LABEL: Record<Props["status"], string> = {
@@ -32,9 +37,18 @@ function toLocalInput(ms: number | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function PostSidebar({ postId, status, slug, serial, publishAt }: Props) {
+export default function PostSidebar({
+  postId,
+  status,
+  slug,
+  serial,
+  publishAt,
+  coverUrl,
+  featured,
+}: Props) {
   const [pending, start] = useTransition();
   const [when, setWhen] = useState(() => toLocalInput(publishAt));
+  const [isFeatured, setIsFeatured] = useState(featured);
 
   const run = (fn: () => Promise<void>) => start(() => void fn());
 
@@ -57,6 +71,34 @@ export default function PostSidebar({ postId, status, slug, serial, publishAt }:
             </Link>
           </p>
         ) : null}
+      </div>
+
+      <div className="side-panel">
+        <h3>サムネイル</h3>
+        <ImageField
+          name="coverImageUrl"
+          label="記事のサムネイル"
+          defaultValue={coverUrl}
+          hint="空欄のときは文字だけのカードになります。"
+          onPick={(value) => run(() => setCoverAction(postId, value?.id ?? null))}
+        />
+      </div>
+
+      <div className="side-panel">
+        <h3>注目</h3>
+        <label className="simple-toggle">
+          <input
+            type="checkbox"
+            checked={isFeatured}
+            onChange={(e) => {
+              const on = e.target.checked;
+              setIsFeatured(on);
+              run(() => setFeaturedAction(postId, on));
+            }}
+          />
+          トップに出す
+        </label>
+        <p className="hint">公開すると、ホームの「注目！」に新しい順で並びます。</p>
       </div>
 
       <div className="side-panel">
