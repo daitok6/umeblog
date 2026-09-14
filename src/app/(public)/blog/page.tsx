@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BlogBrowser from "@/components/BlogBrowser";
+import HeroParallax from "@/components/HeroParallax";
 import { listPublished } from "@/lib/repo/posts";
 
 export const revalidate = 300;
@@ -20,13 +21,18 @@ export default async function BlogPage() {
   return (
     <>
       <section className="blog-hero">
-        <div className="blog-hero__motifs" aria-hidden="true">
-          <span className="blog-hero__motif blog-hero__motif--plant" />
-          <span className="blog-hero__motif blog-hero__motif--globe blog-hero__motif--extra" />
-          <span className="blog-hero__motif blog-hero__motif--plane" />
-          <span className="blog-hero__motif blog-hero__motif--cup blog-hero__motif--extra" />
-          <span className="blog-hero__motif blog-hero__motif--mascot" />
-        </div>
+        <HeroParallax src="/hero-illustration.jpg" alt="" />
+        <svg
+          className="blog-hero__divider"
+          viewBox="0 0 1200 90"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            className="blog-hero__divider-fill"
+            d="M0,22 C45,10 70,58 120,52 C165,47 195,14 245,20 C300,26 330,68 385,62 C435,57 465,18 515,24 C565,30 595,72 650,66 C705,60 735,22 790,28 C845,34 875,70 930,64 C980,59 1005,20 1055,26 C1105,32 1135,64 1175,58 C1190,56 1198,42 1200,35 L1200,90 L0,90 Z"
+          />
+        </svg>
         <div className="container blog-hero__inner">
           <div className="blog-hero__copy">
             <p className="blog-hero__tagline">ちょっとレトロ、ちょっと旅、ちょっとヘン。</p>

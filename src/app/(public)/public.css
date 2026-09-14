@@ -51,7 +51,10 @@
   z-index: 40;
   background: var(--ground);
   border-bottom: 1px solid var(--rule);
-  transition: transform 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
 }
 .site-header--hidden {
   transform: translateY(-100%);
@@ -60,6 +63,25 @@
   .site-header {
     transition: none;
   }
+}
+
+/* /blog only: float transparently over the full-bleed hero photo until the
+   page scrolls, then fall back to the normal solid bar above. The header
+   stays `position: sticky` the whole time (never switches layout model) so
+   there is no jump at the handoff — see .blog-hero's negative margin, which
+   is what actually pulls the photo up behind this bar. */
+.site-header--overlay {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+.site-header--overlay .site-header__logo,
+.site-header--overlay .site-header__nav .nav-link {
+  color: var(--shosei-cream);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+}
+.site-header--overlay .site-header__nav .nav-link:hover {
+  color: var(--shosei-cream);
+  opacity: 0.8;
 }
 
 .site-header__inner {
@@ -186,60 +208,50 @@
   letter-spacing: 0.1em;
 }
 
-/* ── Blog hero: the "cover of a foreign magazine" band, top of /blog ──── */
+/* ── Blog hero: full-bleed photo band, top of /blog ────────────────────
+   `margin-top` cancels out the sticky header's own flow height so the photo
+   still reaches the very top of the viewport behind it, without switching
+   the header off `position: sticky` (see .site-header--overlay above) —
+   that would reserve/release layout space on every scroll-direction flip
+   and visibly jump the page. --header-h must track the header's real
+   rendered height (kept in sync with .site-header__inner's padding below,
+   including the mobile override). */
 .blog-hero {
+  --header-h: 78px;
   position: relative;
+  margin-top: calc(-1 * var(--header-h));
   background: var(--shosei-blue);
   overflow: hidden;
-  padding: 76px 32px 64px;
-  min-height: 440px;
+  padding: calc(var(--header-h) + 72px) 32px 64px;
+  min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
 }
-.blog-hero__motifs {
+.blog-hero__img {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  transform: scale(1.4);
+  transform-origin: center;
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 88%, transparent 100%);
+  pointer-events: none;
+  will-change: transform;
 }
-.blog-hero__motif {
+.blog-hero__divider {
   position: absolute;
-  border-radius: 50%;
-  background: var(--shosei-cream);
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 90px;
+  z-index: 3;
+  pointer-events: none;
 }
-.blog-hero__motif--plant {
-  width: 110px;
-  height: 110px;
-  top: 10%;
-  left: 52%;
-  transform: rotate(-6deg);
-}
-.blog-hero__motif--globe {
-  width: 96px;
-  height: 96px;
-  top: 58%;
-  left: 44%;
-  transform: rotate(4deg);
-}
-.blog-hero__motif--plane {
-  width: 92px;
-  height: 92px;
-  top: 8%;
-  right: 6%;
-  transform: rotate(8deg);
-  border: 3px solid var(--shosei-red);
-}
-.blog-hero__motif--cup {
-  width: 84px;
-  height: 84px;
-  top: 60%;
-  right: 26%;
-  transform: rotate(-5deg);
-}
-.blog-hero__motif--mascot {
-  width: 128px;
-  height: 128px;
-  bottom: 10%;
-  right: 5%;
-  transform: rotate(3deg);
+.blog-hero__divider-fill {
+  fill: var(--shosei-cream);
 }
 .blog-hero__inner {
   position: relative;
@@ -476,6 +488,15 @@
 .blog-filters__reset:hover {
   color: var(--ink);
 }
+.blog-filters__searchall {
+  font-family: var(--f-body);
+  font-size: 13px;
+  color: var(--shosei-blue);
+  text-decoration: underline;
+}
+.blog-filters__searchall:hover {
+  color: var(--shosei-red-deep);
+}
 .blog-filters__chip {
   display: inline-flex;
   align-items: center;
@@ -504,6 +525,43 @@
   color: var(--shosei-blue);
   font-size: 15px;
   margin: 0 0 22px;
+}
+.blog-section-heading {
+  font-family: var(--f-jp);
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+.blog-section-heading__label {
+  font-family: var(--f-hand);
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--shosei-blue);
+  margin-left: 8px;
+}
+
+/* Cards start hidden and rise in as they cross the viewport (see
+   BlogBrowser/PostList's IntersectionObserver). Reduced motion drops
+   straight to the end state — both here and in JS, which skips observing
+   entirely, so a slow first paint can never strand a card at opacity 0. */
+.reveal.pre-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+.reveal.pre-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal.pre-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 .blog-nomatch {
   margin: 1rem 0 3rem;
@@ -794,12 +852,6 @@
   gap: 6px;
   text-align: right;
 }
-.site-footer__sekki {
-  font-family: var(--f-mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--faint);
-}
 .site-footer__copyright {
   font-family: var(--f-body);
   font-size: 12px;
@@ -837,15 +889,12 @@
     flex-direction: column;
   }
   .blog-hero {
-    padding: 48px 20px 40px;
-    min-height: 320px;
+    --header-h: 64px;
+    padding: calc(var(--header-h) + 46px) 20px 40px;
+    min-height: 100vh;
   }
   .blog-hero__copy {
     max-width: 100%;
-  }
-  .blog-hero__motif--globe,
-  .blog-hero__motif--cup {
-    display: none;
   }
   .blog-grid {
     grid-template-columns: 1fr;

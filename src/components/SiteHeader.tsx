@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import ResponsiveName from "@/components/ResponsiveName";
 
@@ -11,8 +12,16 @@ import ResponsiveName from "@/components/ResponsiveName";
  * The scroll handler is `{ passive: true }` and coalesced through a single
  * in-flight `requestAnimationFrame`, so at most one state update happens per
  * frame no matter how many scroll events fire.
+ *
+ * `/blog` gets one extra treatment: its hero is a full-bleed photo the
+ * header should float over transparently, then turn solid the moment the
+ * page scrolls (same `scrolled` flag already tracked below) — so only that
+ * route ever sees `site-header--overlay`, and every other page is
+ * untouched.
  */
 export default function SiteHeader({ wide, narrow }: { wide: string; narrow: string }) {
+  const pathname = usePathname();
+  const isBlogHero = pathname === "/blog";
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const lastY = useRef(0);
@@ -55,6 +64,7 @@ export default function SiteHeader({ wide, narrow }: { wide: string; narrow: str
         "site-header",
         scrolled ? "site-header--scrolled" : "",
         hidden ? "site-header--hidden" : "",
+        isBlogHero && !scrolled ? "site-header--overlay" : "",
       ]
         .filter(Boolean)
         .join(" ")}

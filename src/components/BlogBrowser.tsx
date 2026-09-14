@@ -63,6 +63,16 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
     return [...rows].sort((a, b) => (b.publishedAt ?? 0) - (a.publishedAt ?? 0));
   }, [posts, query, tag]);
 
+  // "人気" is a highlight reel of the current results, not a separate pool —
+  // it can (and usually does) overlap with "最新" below. Only worth showing
+  // once there's enough in "最新" that a 5-post highlight actually curates
+  // something, rather than just repeating the whole grid a second time.
+  const popularPosts = useMemo(() => {
+    if (filtered.length <= 5) return [];
+    return [...filtered].sort((a, b) => b.views - a.views).slice(0, 5);
+  }, [filtered]);
+  const hasPopular = popularPosts.length > 0;
+
   const hasFilters = query.trim() !== "" || tag != null;
 
   function resetFilters() {
@@ -95,6 +105,13 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
             }}
           />
 
+          <Link
+            href={query.trim() ? `/search?q=${encodeURIComponent(query.trim())}` : "/search"}
+            className="blog-filters__searchall"
+          >
+            本文も検索する →
+          </Link>
+
           {hasFilters ? (
             <button type="button" className="blog-filters__reset" onClick={resetFilters}>
               すべて解除
@@ -122,6 +139,21 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
       <p className="blog-count" aria-live="polite">
         {filtered.length} 本
       </p>
+
+      {hasPopular ? (
+        <>
+          <h2 className="blog-section-heading">
+            人気<span className="blog-section-heading__label">popular</span>
+          </h2>
+          <PostList posts={popularPosts} />
+        </>
+      ) : null}
+
+      {posts.length > 0 ? (
+        <h2 className="blog-section-heading">
+          最新<span className="blog-section-heading__label">latest</span>
+        </h2>
+      ) : null}
 
       {filtered.length === 0 && posts.length > 0 ? (
         <div className="blog-nomatch frame">
