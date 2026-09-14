@@ -3,12 +3,13 @@ import { login, newPost } from "./helpers";
 
 /**
  * Desktop-only sidebar on the article page: 目次 (table of contents),
- * 関連記事 (related), 話題 (topics), and 最近の記事 (recent) — sticky, and
- * built entirely from space .prose never used (see public.css's
- * .article__aside / .article__sidebar). Below 768px it's replaced by a
- * collapsed <details> TOC and a related-articles block at the end of the
- * article (.article__toc-m / .related-tail) — see tests/mobile.spec.ts for
- * the general no-overflow/tap-target sweep this only supplements.
+ * 関連記事 (related), and 最近の記事 (recent) — sticky, independently
+ * scrollable, and built entirely from space .prose never used (see
+ * public.css's .article__aside / .article__sidebar). Below 768px it's
+ * replaced by a collapsed <details> TOC and a related-articles block at the
+ * end of the article (.article__toc-m / .related-tail) — see
+ * tests/mobile.spec.ts for the general no-overflow/tap-target sweep this
+ * only supplements.
  */
 
 async function publish(
@@ -120,10 +121,6 @@ test("desktop: sidebar surfaces a working TOC, related articles, and topics with
   const relatedBlock = aside.locator(".side-block").filter({ has: page.locator("#side-related") });
   await expect(relatedBlock.getByRole("link", { name: titleMate })).toBeVisible();
   await expect(aside.getByRole("link", { name: titleMain })).toHaveCount(0);
-
-  // 話題 never repeats a tag already shown in .article__meta.
-  await expect(page.locator(".article__meta").getByText(tagName, { exact: true })).toBeVisible();
-  await expect(aside.locator(".side-tags").getByText(tagName, { exact: true })).toHaveCount(0);
 
   // Scroll-spy: once both headings have scrolled past, the last one's link
   // (the section actually being read) is the one marked current.
