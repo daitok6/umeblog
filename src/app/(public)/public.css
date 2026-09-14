@@ -170,45 +170,7 @@
   width: min(28em, 100%);
 }
 
-/* ── Hero (home page): the framed block, the signature of the reference ── */
-.hero {
-  position: relative;
-  height: min(72vh, 680px);
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-}
-.hero__motif {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.hero__body {
-  position: relative;
-  padding: 40px;
-  width: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-.hero__title {
-  font-family: var(--f-hand);
-  font-size: clamp(48px, 9vw, 120px);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-  color: var(--shosei-blue);
-}
-.hero__tagline {
-  margin-top: 0.8rem;
-  color: var(--muted);
-  font-size: 14px;
-  letter-spacing: 0.1em;
-}
-
-/* ── Blog hero: full-bleed photo band, top of /blog ────────────────────
+/* ── Blog hero: full-bleed photo band, top of / ─────────────────────────
    `margin-top` cancels out the sticky header's own flow height so the photo
    still reaches the very top of the viewport behind it, without switching
    the header off `position: sticky` (see .site-header--overlay above) —
@@ -584,133 +546,6 @@
   margin-top: 0.75rem;
 }
 
-/* ── Rails (home page) ─────────────────────────────────── */
-.rail {
-  padding-top: 48px;
-}
-.rail__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 16px;
-}
-.rail__head h2 {
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-.rail__nav {
-  display: flex;
-  gap: 0.5rem;
-}
-.rail__btn {
-  font-family: var(--f-body);
-  font-size: 16px;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: 3px;
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
-}
-.rail__btn:hover:not(:disabled) {
-  border-color: var(--rule-strong);
-}
-.rail__btn:disabled {
-  color: var(--faint);
-  cursor: default;
-}
-
-.rail__track {
-  display: flex;
-  gap: 1.25rem;
-  list-style: none;
-  margin: 0 calc(var(--inset) * -1);
-  padding: 0 var(--inset) 8px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline-start: var(--inset);
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-.rail__track::-webkit-scrollbar {
-  display: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .rail__track {
-    scroll-behavior: auto;
-  }
-}
-.rail__item {
-  flex: 0 0 min(72vw, 280px);
-  scroll-snap-align: start;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  text-decoration: none;
-  color: var(--ink);
-}
-.card__cover {
-  position: relative;
-  display: block;
-  aspect-ratio: 4 / 3;
-  background: var(--sunken);
-  border: 1px solid var(--rule);
-  overflow: hidden;
-}
-.card__cover img {
-  transition: transform 0.2s ease;
-}
-.card:hover .card__cover img {
-  transform: scale(1.03);
-}
-@media (prefers-reduced-motion: reduce) {
-  .card__cover img {
-    transition: none;
-  }
-  .card:hover .card__cover img {
-    transform: none;
-  }
-}
-.card__cover--empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.card__serial {
-  color: var(--faint);
-  font-size: 28px;
-}
-.card__title {
-  display: block;
-  margin-top: 0.7rem;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.6;
-}
-.card__meta {
-  display: flex;
-  gap: 0.6rem;
-  margin-top: 0.3rem;
-  flex-wrap: wrap;
-}
-
-.rail-more {
-  padding: 40px 0 72px;
-  text-align: center;
-}
-.rail-more a {
-  font-family: var(--f-body);
-  color: var(--muted);
-}
-.rail-more a:hover {
-  color: var(--ink);
-}
-
 /* ── Article ────────────────────────────────────────────── */
 .article {
   padding-block: 64px 96px;
@@ -879,14 +714,6 @@
   }
   .site-header__nav .nav-link {
     font-size: 12px;
-  }
-  .hero {
-    height: min(60vh, 460px);
-  }
-  .hero__body {
-    padding: 20px;
-    align-items: flex-start;
-    flex-direction: column;
   }
   .blog-hero {
     --header-h: 64px;

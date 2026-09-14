@@ -5,12 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import type { PostWithMeta } from "@/lib/repo/posts";
-
-function formatDate(ms: number | null): string {
-  if (ms == null) return "";
-  const d = new Date(ms);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
+import { formatDate } from "@/lib/formatDate";
 
 const GRAPHIC_TONES = ["cream", "aqua", "green"] as const;
 
@@ -145,5 +140,3 @@ export default function PostList({ posts }: { posts: PostWithMeta[] }) {
     </ul>
   );
 }
-
-export { formatDate };

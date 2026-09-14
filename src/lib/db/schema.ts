@@ -238,9 +238,10 @@ export const siteSettings = pgTable("site_settings", {
   tagline: text("tagline").notNull().default(""),
   aboutMd: text("about_md").notNull().default(""),
   /**
-   * JSON-encoded RailConfig[] (see src/lib/rails.ts) — which rails the home
-   * page shows, and in what order. Empty means "use DEFAULT_RAILS", the same
-   * empty-means-inherit convention as bannerTitle above.
+   * Unused leftover from a removed home-page "rails" feature (curated post
+   * shelves). Kept rather than migrated away per this project's
+   * db:push-not-migrations convention — dropping a column needs a real
+   * migration path this app doesn't have.
    */
   railsJson: text("rails_json").notNull().default(""),
 });

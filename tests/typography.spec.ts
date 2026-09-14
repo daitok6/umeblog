@@ -30,7 +30,7 @@ test("letter-spacing is loosened for Japanese", async ({ page }) => {
 });
 
 test("article prose keeps to roughly 35 Japanese characters per line", async ({ page }) => {
-  await page.goto("/blog");
+  await page.goto("/");
   await page.locator(".blog-card__link").first().click();
   await page.locator(".prose").waitFor();
 
@@ -49,7 +49,7 @@ test("article prose keeps to roughly 35 Japanese characters per line", async ({ 
 
 test("nothing anywhere is rendered in italic", async ({ page }) => {
   // Browsers synthesise a slanted form for Japanese, which looks broken.
-  for (const path of ["/", "/about", "/blog"]) {
+  for (const path of ["/", "/about"]) {
     await page.goto(path);
     const italics = await page.evaluate(() =>
       [...document.querySelectorAll("body *")].filter(

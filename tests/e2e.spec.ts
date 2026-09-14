@@ -33,19 +33,23 @@ test("write a post, publish it, read it, and receive a reply", async ({ page }) 
 
   // ── A reader reads it ────────────────────────────────────
   await page.goto("/");
-  // The header no longer carries a search box — that moved to /blog's
-  // instant filter (tests/blog.spec.ts) — and its "Blog" link now points
-  // there instead of home.
+  // The header no longer carries a search box — that moved to /'s instant
+  // filter (tests/blog.spec.ts) — and its "Blog" link points at home, which
+  // is now the archive itself.
   await expect(page.locator(".site-header").locator(".site-search__input")).toHaveCount(0);
   await expect(page.locator(".site-header .nav-link", { hasText: "Blog" })).toHaveAttribute(
     "href",
-    "/blog",
+    "/",
   );
 
-  await page.goto("/blog");
-  await expect(page.locator(".blog-grid")).toContainText(marker);
+  // BlogBrowser renders two .blog-grid lists once there are enough posts — a
+  // "人気" highlight reel, then the full "最新" list — and they deliberately
+  // overlap (see BlogBrowser's own comment). `.last()` always lands on 最新,
+  // the complete list, so a brand-new post is never missed just because it
+  // didn't (or did) also make the popular reel.
+  await expect(page.locator(".blog-grid").last()).toContainText(marker);
 
-  await page.locator(".blog-card__link", { hasText: marker }).click();
+  await page.locator(".blog-grid").last().locator(".blog-card__link", { hasText: marker }).click();
   await page.waitForURL(/\/p\//);
   await expect(page.locator(".article__title")).toContainText(marker);
   await expect(page.locator(".prose")).toContainText("本文をここに書きます。");
@@ -102,8 +106,8 @@ test("a scheduled post stays hidden until its time passes", async ({ page }) => 
 
   // Not on the public site yet — the visibility predicate compares publishAt
   // to now at read time, which is why no cron job is needed.
-  await page.goto("/blog");
-  await expect(page.locator(".blog-grid")).not.toContainText(marker);
+  await page.goto("/");
+  await expect(page.locator(".blog-grid").last()).not.toContainText(marker);
 });
 
 test("unpublishing removes a post from the public site but keeps its number", async ({
@@ -121,8 +125,8 @@ test("unpublishing removes a post from the public site but keeps its number", as
   await page.locator("button", { hasText: "公開する" }).click();
   await page.waitForURL("**/admin/posts");
 
-  await page.goto("/blog");
-  await expect(page.locator(".blog-grid")).toContainText(marker);
+  await page.goto("/");
+  await expect(page.locator(".blog-grid").last()).toContainText(marker);
 
   // Capture the number it was given.
   await page.goto(postUrl);
@@ -136,8 +140,8 @@ test("unpublishing removes a post from the public site but keeps its number", as
   await page.locator("button", { hasText: "公開を取り消す" }).click();
   await expect(page.locator(".status")).toContainText("下書き");
 
-  await page.goto("/blog");
-  await expect(page.locator(".blog-grid")).not.toContainText(marker);
+  await page.goto("/");
+  await expect(page.locator(".blog-grid").last()).not.toContainText(marker);
 
   // Republishing must not renumber it — readers' links and the numbering they
   // see stay put.
@@ -148,6 +152,6 @@ test("unpublishing removes a post from the public site but keeps its number", as
   await page.goto(postUrl);
   expect(await serialOf()).toBe(serial);
 
-  await page.goto("/blog");
-  await expect(page.locator(".blog-grid")).toContainText(marker);
+  await page.goto("/");
+  await expect(page.locator(".blog-grid").last()).toContainText(marker);
 });

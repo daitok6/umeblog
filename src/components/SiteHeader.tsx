@@ -13,7 +13,7 @@ import ResponsiveName from "@/components/ResponsiveName";
  * in-flight `requestAnimationFrame`, so at most one state update happens per
  * frame no matter how many scroll events fire.
  *
- * `/blog` gets one extra treatment: its hero is a full-bleed photo the
+ * `/` gets one extra treatment: its hero is a full-bleed photo the
  * header should float over transparently, then turn solid the moment the
  * page scrolls (same `scrolled` flag already tracked below) — so only that
  * route ever sees `site-header--overlay`, and every other page is
@@ -21,7 +21,7 @@ import ResponsiveName from "@/components/ResponsiveName";
  */
 export default function SiteHeader({ wide, narrow }: { wide: string; narrow: string }) {
   const pathname = usePathname();
-  const isBlogHero = pathname === "/blog";
+  const isBlogHero = pathname === "/";
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const lastY = useRef(0);
@@ -74,7 +74,7 @@ export default function SiteHeader({ wide, narrow }: { wide: string; narrow: str
           <ResponsiveName wide={wide} narrow={narrow} />
         </Link>
         <nav className="site-header__nav">
-          <Link className="nav-link" href="/blog">
+          <Link className="nav-link" href="/">
             Blog
           </Link>
           <Link className="nav-link" href="/about">

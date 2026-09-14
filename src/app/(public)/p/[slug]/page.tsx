@@ -4,7 +4,7 @@ import Link from "next/link";
 import BlockRenderer from "@/components/BlockRenderer";
 import CommentForm from "@/components/CommentForm";
 import ReadTracker from "@/components/ReadTracker";
-import { formatDate } from "@/components/PostList";
+import { formatDate } from "@/lib/formatDate";
 import { getPublishedBySlug } from "@/lib/repo/posts";
 import { listForPost } from "@/lib/repo/replies";
 import { listApproved } from "@/lib/repo/comments";

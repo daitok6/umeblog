@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { login, newPost } from "./helpers";
 
 /**
- * /blog is the full archive: search + category-tag filters, all applied
+ * / is the full archive: search + category-tag filters, all applied
  * instantly in the browser (no navigation, no reload). This publishes real
  * posts and drives the filter UI the way a reader would.
  */
@@ -38,8 +38,8 @@ test("filters and searches the blog list instantly, with no navigation", async (
   await page.locator("button", { hasText: "公開する" }).click();
   await page.waitForURL("**/admin/posts");
 
-  // ── A reader lands on /blog ───────────────────────────────────────
-  await page.goto("/blog");
+  // ── A reader lands on / ───────────────────────────────────────────
+  await page.goto("/");
   const searchInput = page.locator("#blog-search");
   const rows = page.locator(".blog-card");
 
@@ -83,15 +83,15 @@ test("filters and searches the blog list instantly, with no navigation", async (
     "false",
   );
 
-  // ── None of the above ever navigated away from /blog ──────────────
-  expect(page.url()).toContain("/blog");
+  // ── None of the above ever navigated away from / ──────────────────
+  expect(page.url()).toMatch(/\/$/);
   expect(
     await page.evaluate(() => (window as unknown as { __noNav?: boolean }).__noNav),
   ).toBe(true);
 });
 
 test("composing Japanese text does not filter mid-conversion", async ({ page }) => {
-  await page.goto("/blog");
+  await page.goto("/");
   const searchInput = page.locator("#blog-search");
   const countBefore = await page.locator(".blog-count").innerText();
 

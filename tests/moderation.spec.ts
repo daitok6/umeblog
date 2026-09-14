@@ -58,7 +58,7 @@ test.describe("moderation end to end", () => {
     // A distinct IP per test: the rate limiter is per-IP and would otherwise
     // (correctly) block repeated runs from the same address.
     await page.setExtraHTTPHeaders({ "x-forwarded-for": `198.51.100.${Date.now() % 200}` });
-    await page.goto("/blog");
+    await page.goto("/");
     await page.locator(".blog-card__link").first().click();
     await page.locator(".comment-form").waitFor();
 
@@ -78,7 +78,7 @@ test.describe("moderation end to end", () => {
     const marker = `ok-${Date.now()}`;
     await page.setExtraHTTPHeaders({ "x-forwarded-for": `203.0.113.${Date.now() % 200}` });
 
-    await page.goto("/blog");
+    await page.goto("/");
     await page.locator(".blog-card__link").first().click();
     // Wait for the navigation to settle before reading the URL, or page.url()
     // still reports "/" and the final assertion checks the wrong page.
@@ -115,7 +115,7 @@ test("the rate limiter blocks a burst from one address", async ({ page }) => {
   const ip = `192.0.2.${Date.now() % 200}`;
   await page.setExtraHTTPHeaders({ "x-forwarded-for": ip });
 
-  await page.goto("/blog");
+  await page.goto("/");
   await page.locator(".blog-card__link").first().click();
   await page.locator(".comment-form").waitFor();
 
