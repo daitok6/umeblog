@@ -20,6 +20,13 @@ import * as schema from "../src/lib/db/schema";
 // of these strings is never swept up.
 const TEST_QUERY_PREFIXES = ["検索テスト-", "該当なし-"];
 
+// tests/blog.spec.ts and tests/e2e.spec.ts create tags with these prefixes.
+// Unlike posts/replies, a tag's row doesn't cascade away when the test post
+// that used it is deleted (post_tags does, tags itself doesn't) — without
+// this, every test run leaves one more orphan tag behind, which is exactly
+// the crowding /admin/tags' curation exists to prevent.
+const TEST_TAG_PREFIXES = ["絞り込みタグ", "テストタグ-"];
+
 async function main() {
   const testUsers = await db.query.users.findMany({
     where: like(schema.users.email, "%@umeblog.test"),
@@ -53,8 +60,16 @@ async function main() {
     )
     .returning({ id: schema.events.id });
 
+  // Safe even though post_tags/ticket_tags cascade from tags.id: by the time
+  // this runs, every test post/ticket that used these tags is already gone,
+  // so a matching tag row here is always an orphan.
+  const deletedTags = await db
+    .delete(schema.tags)
+    .where(or(...TEST_TAG_PREFIXES.map((p) => like(schema.tags.name, `${p}%`))))
+    .returning({ id: schema.tags.id });
+
   console.log(
-    `cleaned up ${ids.length} test account(s), their content, login_attempts, and ${deletedSearches.length} test search event(s)`,
+    `cleaned up ${ids.length} test account(s), their content, login_attempts, ${deletedSearches.length} test search event(s), and ${deletedTags.length} test tag(s)`,
   );
 }
 

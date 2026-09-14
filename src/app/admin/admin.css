@@ -698,6 +698,15 @@
   max-width: 48em;
 }
 
+.tag-curation__order {
+  width: 4.5rem;
+  min-height: 40px;
+  margin: 0;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+}
+
 @media (max-width: 768px) {
   .admin-main {
     padding-top: 20px;

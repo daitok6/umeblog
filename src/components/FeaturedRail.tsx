@@ -91,31 +91,40 @@ export default function FeaturedRail({ posts }: Props) {
           aria-label="注目の記事"
         >
           {posts.map((p) => (
+            // Same stretched-link restructuring as PostList.tsx: the tag is
+            // its own link now, so it can no longer live inside the title's
+            // <a>. See public.css's ".blog-card__link" comment.
             <li key={p.id} className="featured-card">
-              <Link href={`/p/${p.slug}`} className="featured-card__link">
-                <span
-                  className={
-                    p.cover
-                      ? "featured-card__cover"
-                      : "featured-card__cover featured-card__cover--empty"
-                  }
-                >
-                  {p.cover ? (
-                    <Image
-                      src={p.cover.url}
-                      alt={p.cover.alt}
-                      fill
-                      sizes="(max-width: 768px) 82vw, 320px"
-                      style={{ objectFit: "cover" }}
-                    />
-                  ) : null}
-                </span>
-                <span className="featured-card__body">
-                  {p.tags[0] ? <span className="blog-card__tag">({p.tags[0].name})</span> : null}
-                  <span className="featured-card__title">{p.title || "無題"}</span>
-                  <span className="blog-card__date">{formatDate(p.publishedAt)}</span>
-                </span>
-              </Link>
+              <span
+                className={
+                  p.cover
+                    ? "featured-card__cover"
+                    : "featured-card__cover featured-card__cover--empty"
+                }
+              >
+                {p.cover ? (
+                  <Image
+                    src={p.cover.url}
+                    alt={p.cover.alt}
+                    fill
+                    sizes="(max-width: 768px) 82vw, 320px"
+                    style={{ objectFit: "cover" }}
+                  />
+                ) : null}
+              </span>
+              <span className="featured-card__body">
+                {p.tags[0] ? (
+                  <span className="blog-card__tags">
+                    <Link href={`/tag/${p.tags[0].slug}`} className="blog-card__tag">
+                      ({p.tags[0].name})
+                    </Link>
+                  </span>
+                ) : null}
+                <Link href={`/p/${p.slug}`} className="blog-card__link featured-card__title">
+                  {p.title || "無題"}
+                </Link>
+                <span className="blog-card__date">{formatDate(p.publishedAt)}</span>
+              </span>
             </li>
           ))}
         </ul>

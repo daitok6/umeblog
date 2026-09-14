@@ -6,6 +6,9 @@ import PostList from "@/components/PostList";
 import type { PostWithMeta } from "@/lib/repo/posts";
 import { useReveal } from "@/lib/useReveal";
 
+/** Just enough of a tag row to render a chip — keeps `db/schema` out of this client bundle. */
+export type ChipTag = { name: string; slug: string };
+
 /**
  * Instant client-side search + filters over the full published list.
  *
@@ -14,11 +17,24 @@ import { useReveal } from "@/lib/useReveal";
  * browser just to make typing feel instant would turn a mostly-read page
  * into a multi-megabyte payload. Full body search stays one click away at
  * `/search`, which already does it server-side with `searchPublished`.
+ *
+ * `chips` is the author-curated, ordered allowlist from `/admin/tags`
+ * (`listChips()`) — the chip row shows exactly these, in this order, never
+ * every tag in use. `initialTag` pre-selects one on mount, for `/tag/[slug]`
+ * reusing this same component instead of building a second filtered list.
  */
-export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
+export default function BlogBrowser({
+  posts,
+  chips,
+  initialTag = null,
+}: {
+  posts: PostWithMeta[];
+  chips: ChipTag[];
+  initialTag?: string | null;
+}) {
   const [rawQuery, setRawQuery] = useState("");
   const [query, setQuery] = useState("");
-  const [tag, setTag] = useState<string | null>(null);
+  const [tag, setTag] = useState<string | null>(initialTag);
   const composing = useRef(false);
   const debounceId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -33,17 +49,33 @@ export default function BlogBrowser({ posts }: { posts: PostWithMeta[] }) {
     };
   }, [rawQuery]);
 
+  // Counts still come from the live post list (so a chip's number is always
+  // accurate), but which tags appear — and in what order — comes from the
+  // curated `chips` list, not from "every tag in use, biggest first". An
+  // active tag missing from `chips` (a reader followed a card link to an
+  // uncurated tag) is kept as a one-off extra chip, otherwise the filter
+  // would look active with nothing on screen explaining why.
   const tagFacets = useMemo(() => {
-    const counts = new Map<string, { name: string; slug: string; count: number }>();
+    const counts = new Map<string, number>();
     for (const p of posts) {
       for (const t of p.tags) {
-        const entry = counts.get(t.slug) ?? { name: t.name, slug: t.slug, count: 0 };
-        entry.count += 1;
-        counts.set(t.slug, entry);
+        counts.set(t.slug, (counts.get(t.slug) ?? 0) + 1);
       }
     }
-    return [...counts.values()].sort((a, b) => b.count - a.count);
-  }, [posts]);
+
+    const facets = chips
+      .map((t) => ({ name: t.name, slug: t.slug, count: counts.get(t.slug) ?? 0 }))
+      .filter((t) => t.count > 0);
+
+    if (tag && !facets.some((t) => t.slug === tag)) {
+      const active = posts.find((p) => p.tags.some((t) => t.slug === tag))?.tags.find(
+        (t) => t.slug === tag,
+      );
+      if (active) facets.unshift({ name: active.name, slug: active.slug, count: counts.get(tag) ?? 0 });
+    }
+
+    return facets;
+  }, [posts, chips, tag]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

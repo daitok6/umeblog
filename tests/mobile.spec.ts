@@ -83,7 +83,14 @@ test("admin is usable on a phone and every control is thumb-sized", async ({ pag
   await page.setViewportSize({ width: 375, height: 800 });
   await login(page);
 
-  for (const path of ["/admin", "/admin/posts", "/admin/comments", "/admin/tickets", "/admin/tickets?view=board"]) {
+  for (const path of [
+    "/admin",
+    "/admin/posts",
+    "/admin/comments",
+    "/admin/tickets",
+    "/admin/tickets?view=board",
+    "/admin/tags",
+  ]) {
     await page.goto(path);
 
     const small = await page.evaluate(() =>

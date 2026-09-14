@@ -31,6 +31,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               ) : null}
             </Link>
             {user.role === "author" ? <Link href="/admin/insights">分析</Link> : null}
+            {user.role === "author" ? <Link href="/admin/tags">タグ</Link> : null}
             {user.role === "author" ? <Link href="/admin/settings">設定</Link> : null}
             <Link href="/" target="_blank" rel="noopener">
               サイトを見る

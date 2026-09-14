@@ -148,6 +148,12 @@ export const tags = pgTable("tags", {
   id: integer("id").generatedByDefaultAsIdentity().primaryKey(),
   name: text("name").notNull().unique(),
   slug: text("slug").notNull().unique(),
+  /**
+   * Position in the public filter chip row (1-based). NULL means "not a
+   * chip" — the default for every tag `ensureTag()` auto-creates, from posts
+   * or tickets alike, so a brand-new tag never crowds the row uninvited.
+   */
+  chipOrder: integer("chip_order"),
 });
 
 export const postTags = pgTable(

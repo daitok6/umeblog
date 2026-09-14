@@ -39,7 +39,10 @@ export default function PostList({ posts }: { posts: PostWithMeta[] }) {
     <ul className="blog-grid" ref={listRef}>
       {posts.map((p, i) => {
         const isHero = i === 0;
-        const tag = p.tags[0]?.name ?? null;
+        // A grid row is only 190px tall — a post with its full 8-tag
+        // allowance (setPostTags' cap) would overrun it, so the card shows
+        // at most 3 and the rest stay one click away on the post page.
+        const cardTags = p.tags.slice(0, 3);
         const date = formatDate(p.publishedAt);
 
         let tilt = 0;
@@ -64,39 +67,59 @@ export default function PostList({ posts }: { posts: PostWithMeta[] }) {
             ? `blog-card blog-card--graphic blog-card--graphic-${GRAPHIC_TONES[i % GRAPHIC_TONES.length]}`
             : `blog-card blog-card--${p.kind}`;
 
+        // The card's whole body used to be one <Link>, with the tag inside
+        // it — an <a> can't nest inside another <a>, so making tags
+        // clickable meant restructuring: the title alone is the real link,
+        // stretched over the full card with `.blog-card__title::after`
+        // (see public.css), and the tags sit beside it as their own links,
+        // lifted onto `z-index: 1` so they stay reachable above the overlay.
+        const tagLinks = cardTags.length > 0 ? (
+          <span className="blog-card__tags">
+            {cardTags.map((t) => (
+              <Link key={t.slug} href={`/tag/${t.slug}`} className="blog-card__tag">
+                ({t.name})
+              </Link>
+            ))}
+          </span>
+        ) : null;
+
         return (
           <li key={p.id} data-reveal className={cardClass} style={style}>
-            <Link href={`/p/${p.slug}`} className="blog-card__link">
-              {p.kind === "graphic" ? (
-                <>
-                  {tag ? <span className="blog-card__tag">({tag})</span> : null}
-                  <h3 className="blog-card__title blog-card__title--big">{p.title || "無題"}</h3>
+            {p.kind === "graphic" ? (
+              <>
+                {tagLinks}
+                <h3 className="blog-card__title blog-card__title--big">
+                  <Link href={`/p/${p.slug}`} className="blog-card__link">
+                    {p.title || "無題"}
+                  </Link>
+                </h3>
+                <span className="blog-card__date">{date}</span>
+              </>
+            ) : (
+              <>
+                <span
+                  className={p.cover ? "blog-card__cover" : "blog-card__cover blog-card__cover--empty"}
+                >
+                  {p.cover ? (
+                    <Image
+                      src={p.cover.url}
+                      alt={p.cover.alt}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                      style={{ objectFit: "cover" }}
+                    />
+                  ) : null}
+                </span>
+                <span className="blog-card__body">
+                  {tagLinks}
+                  <Link href={`/p/${p.slug}`} className="blog-card__link blog-card__title">
+                    {p.title || "無題"}
+                  </Link>
+                  {p.lead ? <span className="blog-card__lead">{p.lead}</span> : null}
                   <span className="blog-card__date">{date}</span>
-                </>
-              ) : (
-                <>
-                  <span
-                    className={p.cover ? "blog-card__cover" : "blog-card__cover blog-card__cover--empty"}
-                  >
-                    {p.cover ? (
-                      <Image
-                        src={p.cover.url}
-                        alt={p.cover.alt}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                        style={{ objectFit: "cover" }}
-                      />
-                    ) : null}
-                  </span>
-                  <span className="blog-card__body">
-                    {tag ? <span className="blog-card__tag">({tag})</span> : null}
-                    <span className="blog-card__title">{p.title || "無題"}</span>
-                    {p.lead ? <span className="blog-card__lead">{p.lead}</span> : null}
-                    <span className="blog-card__date">{date}</span>
-                  </span>
-                </>
-              )}
-            </Link>
+                </span>
+              </>
+            )}
           </li>
         );
       })}

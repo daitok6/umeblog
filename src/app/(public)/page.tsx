@@ -4,6 +4,7 @@ import FeaturedRail from "@/components/FeaturedRail";
 import HeroParallax from "@/components/HeroParallax";
 import { listPublished } from "@/lib/repo/posts";
 import { getSettings, heroImages } from "@/lib/repo/settings";
+import { listChips } from "@/lib/repo/tags";
 
 export const revalidate = 300;
 
@@ -13,7 +14,7 @@ const MOBILE_MEDIA = "(max-width: 768px)";
 export default async function HomePage() {
   // A blog this size fits comfortably in one request; past a few hundred
   // posts this should move to server-side filtering with URL params instead.
-  const raw = await listPublished(1000);
+  const [raw, chips] = await Promise.all([listPublished(1000), listChips()]);
 
   const hero = heroImages(await getSettings());
   const heroCommon = {
@@ -72,7 +73,7 @@ export default async function HomePage() {
       </section>
       <FeaturedRail posts={featured} />
       <div className="container">
-        <BlogBrowser posts={posts} />
+        <BlogBrowser posts={posts} chips={chips} />
       </div>
     </>
   );
