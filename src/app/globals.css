@@ -217,6 +217,13 @@ select {
   font-size: 1.15em;
   margin-top: 2em;
 }
+/* Keeps a TOC anchor jump from landing under the sticky article sidebar
+   header (see (public)/public.css's .article__sidebar). */
+.prose h2,
+.prose h3,
+.prose h4 {
+  scroll-margin-top: 98px;
+}
 .prose blockquote {
   margin: 2em 0;
   padding-left: 1.2em;

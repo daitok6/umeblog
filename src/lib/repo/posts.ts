@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { db, schema } from "@/lib/db";
-import { and, desc, eq, ilike, inArray, isNotNull, lte, max, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNotNull, lte, max, ne, or, sql } from "drizzle-orm";
 
 const { posts, tags, postTags, images, replies } = schema;
 
@@ -138,6 +138,31 @@ export async function listByTag(tagSlug: string, limit?: number): Promise<PostWi
     .$dynamic();
   if (limit != null) query = query.limit(limit);
   const rows = await query;
+  return decorate(rows.map((r) => r.p));
+}
+
+/**
+ * Other visible posts ranked by how many tags they share with this one,
+ * recency as tie-break. The shared-tag count is a LEFT JOIN restricted to
+ * this post's tag ids, so an untagged post simply scores every candidate 0
+ * and the ordering degrades to "most recent" — the empty case needs no
+ * second query, which matters on the Neon HTTP driver (no transactions).
+ */
+export async function listRelated(postId: number, limit = 4): Promise<PostWithMeta[]> {
+  const myTagIds = db
+    .select({ tagId: postTags.tagId })
+    .from(postTags)
+    .where(eq(postTags.postId, postId));
+
+  const rows = await db
+    .select({ p: posts })
+    .from(posts)
+    .leftJoin(postTags, and(eq(postTags.postId, posts.id), inArray(postTags.tagId, myTagIds)))
+    .where(and(visible(), ne(posts.id, postId)))
+    .groupBy(posts.id)
+    .orderBy(sql`count(${postTags.tagId}) desc`, desc(posts.publishedAt), desc(posts.id))
+    .limit(limit);
+
   return decorate(rows.map((r) => r.p));
 }
 

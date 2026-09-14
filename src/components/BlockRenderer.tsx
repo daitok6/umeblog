@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { AffiliateCard } from "@/components/AffiliateCard";
+import { headingAnchorId } from "@/lib/blocks";
 
 /**
  * Renders a stored BlockNote document.
@@ -68,7 +69,11 @@ export default function BlockRenderer({ json }: { json: string }) {
           case "heading": {
             const level = Number(b.props?.level ?? 2);
             const Tag = (level === 1 ? "h2" : level === 2 ? "h3" : "h4") as "h2" | "h3" | "h4";
-            return <Tag key={key}>{renderInline(b.content, key)}</Tag>;
+            return (
+              <Tag key={key} id={headingAnchorId(b.id, i)}>
+                {renderInline(b.content, key)}
+              </Tag>
+            );
           }
           case "bulletListItem":
             return (
