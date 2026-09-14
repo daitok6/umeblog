@@ -29,7 +29,7 @@ export default function HeroParallax({ src, alt }: { src: string; alt: string })
     const apply = () => {
       rafId = null;
       const y = window.scrollY;
-      img.style.transform = `scale(${1.4 + y * 0.0002}) translateY(${y * 0.22}px)`;
+      img.style.transform = `scale(${1 + y * 0.0002}) translateY(${y * 0.22}px)`;
       hero?.style.setProperty("--hero-scroll", String(y));
     };
     const onScroll = () => {
