@@ -24,7 +24,14 @@ const BANNED_UI = [
 test("no streak counter or reward furniture anywhere in the admin", async ({ page }) => {
   await login(page);
 
-  for (const path of ["/admin", "/admin/posts", "/admin/comments", "/admin/settings", "/admin/tickets"]) {
+  for (const path of [
+    "/admin",
+    "/admin/posts",
+    "/admin/comments",
+    "/admin/settings",
+    "/admin/tickets",
+    "/admin/tags",
+  ]) {
     await page.goto(path);
     const text = (await page.locator("body").innerText()).replace(/\s+/g, "");
 

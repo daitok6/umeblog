@@ -5,7 +5,11 @@ import { login, logout, newPost, READER } from "./helpers";
  * One pass through the whole product: write, publish, read, answer.
  */
 test("write a post, publish it, read it, and receive a reply", async ({ page }) => {
-  const marker = `テスト投稿-${Date.now()}`;
+  const stamp = Date.now();
+  const marker = `テスト投稿-${stamp}`;
+  // Prefix-matched and swept by scripts/cleanup-test-data.ts — a bare
+  // "テスト" is too plausible a real tag to delete on sight.
+  const testTag = `テストタグ-${stamp}`;
 
   // ── She writes ───────────────────────────────────────────
   await login(page);
@@ -13,7 +17,7 @@ test("write a post, publish it, read it, and receive a reply", async ({ page }) 
 
   await page.getByTestId("title-input").fill(marker);
   await page.getByTestId("lead-input").fill("これはテストのリード文です。");
-  await page.getByTestId("tags-input").fill("日々 テスト");
+  await page.getByTestId("tags-input").fill(`日々 ${testTag}`);
 
   const editable = page.locator(".bn-editor[contenteditable='true']").first();
   await editable.click();

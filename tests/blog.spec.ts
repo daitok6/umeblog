@@ -38,6 +38,15 @@ test("filters and searches the blog list instantly, with no navigation", async (
   await page.locator("button", { hasText: "公開する" }).click();
   await page.waitForURL("**/admin/posts");
 
+  // ── The chip row is opt-in (/admin/tags), so the fresh tag needs
+  // curating before it can appear as a filter chip ───────────────────
+  await page.goto("/admin/tags");
+  await page.locator("tr", { hasText: tagName }).locator('input[type="checkbox"]').check();
+  await Promise.all([
+    page.waitForResponse((r) => r.request().method() === "POST"),
+    page.locator("button", { hasText: "保存する" }).click(),
+  ]);
+
   // ── A reader lands on / ───────────────────────────────────────────
   await page.goto("/");
   const searchInput = page.locator("#blog-search");
@@ -88,6 +97,12 @@ test("filters and searches the blog list instantly, with no navigation", async (
   expect(
     await page.evaluate(() => (window as unknown as { __noNav?: boolean }).__noNav),
   ).toBe(true);
+
+  // ── A card's own tag is a real link out to its /tag/[slug] page — a
+  // separate check from the chip above, and deliberately outside the
+  // __noNav block since clicking it is supposed to navigate ────────────
+  const cardTag = page.locator(".blog-card__tag", { hasText: tagName }).first();
+  await expect(cardTag).toHaveAttribute("href", /^\/tag\//);
 });
 
 test("composing Japanese text does not filter mid-conversion", async ({ page }) => {

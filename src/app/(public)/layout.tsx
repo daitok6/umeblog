@@ -4,7 +4,7 @@ import SiteHeader from "@/components/SiteHeader";
 import ResponsiveName from "@/components/ResponsiveName";
 import RevealScope from "@/components/RevealScope";
 import { getSettings, bannerNames, siteNames } from "@/lib/repo/settings";
-import { listWithCounts } from "@/lib/repo/tags";
+import { listChips } from "@/lib/repo/tags";
 import "./public.css";
 
 export const metadata: Metadata = {
@@ -14,15 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const [settings, tags] = await Promise.all([getSettings(), listWithCounts()]);
+  const [settings, chips] = await Promise.all([getSettings(), listChips()]);
   const banner = bannerNames(settings);
   const site = siteNames(settings);
-  // Footer nav mirrors whichever tags are actually in use, most-used first
-  // (listWithCounts is already sorted that way) — same source the blog page's
-  // chips read from, so there's one place that decides what's "current" on
-  // this blog. A brand-new blog with no tags yet falls back to Blog/About
-  // so the nav is never empty.
-  const footerTags = tags.slice(0, 5);
+  // Footer nav mirrors the same author-curated chip list the blog page's
+  // filter row reads from (listChips, /admin/tags) — one place decides
+  // what's "current" on this blog. A brand-new blog with nothing curated
+  // yet falls back to Blog/About so the nav is never empty.
+  const footerTags = chips.slice(0, 5);
 
   return (
     <div className="public-shell">
