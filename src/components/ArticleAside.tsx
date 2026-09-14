@@ -1,8 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import ArticleToc from "@/components/ArticleToc";
 import RelatedList from "@/components/RelatedList";
 import TocSpy from "@/components/TocSpy";
 import type { Heading } from "@/lib/blocks";
+import { formatDate } from "@/lib/formatDate";
 import type { PostWithMeta } from "@/lib/repo/posts";
 import { schema } from "@/lib/db";
 
@@ -14,6 +16,11 @@ type SideTag = schema.Tag & { count: number };
  * public.css) — the mobile equivalents (`<ArticleToc variant="mobile">`,
  * the `.related-tail` RelatedList) are separate elements rendered by the
  * page itself, not by this component.
+ *
+ * 最近の記事 renders thumbnail cards (cover + title + date), the same
+ * stretched-link idiom as FeaturedRail/PostList — see the .side-card rules
+ * in public.css. 関連記事 stays plain title+date links on purpose: that
+ * markup is shared with the mobile `.related-tail` block via RelatedList.
  *
  * Server component: all four sections are static markup from server-fetched
  * props. The only client JS this pulls in is TocSpy, and only when there's
@@ -66,10 +73,30 @@ export default function ArticleAside({
             <h2 className="label" id="side-recent">
               最近の記事
             </h2>
-            <ul className="side-list">
+            <ul className="side-cards">
               {recent.map((p) => (
-                <li key={p.id} className="side-item">
-                  <Link href={`/p/${p.slug}`}>{p.title || "無題"}</Link>
+                <li key={p.id} className="side-card">
+                  <span
+                    className={
+                      p.cover ? "side-card__cover" : "side-card__cover side-card__cover--empty"
+                    }
+                  >
+                    {p.cover ? (
+                      <Image
+                        src={p.cover.url}
+                        alt={p.cover.alt}
+                        fill
+                        sizes="72px"
+                        style={{ objectFit: "cover" }}
+                      />
+                    ) : null}
+                  </span>
+                  <span className="side-card__body">
+                    <Link href={`/p/${p.slug}`} className="blog-card__link side-card__title">
+                      {p.title || "無題"}
+                    </Link>
+                    <span className="side-card__date label">{formatDate(p.publishedAt)}</span>
+                  </span>
                 </li>
               ))}
             </ul>
