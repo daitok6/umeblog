@@ -305,6 +305,7 @@ export default function Editor({
         <button className="btn-sm" type="button" onClick={insertAffiliateLink} data-testid="insert-affiliate">
           ＋ アフィリエイト
         </button>
+        <span className="label">改行は Shift + Enter</span>
         <span style={{ flex: 1 }} />
         <span className="save-state" data-testid="save-state">
           {stateLabel}

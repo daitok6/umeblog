@@ -207,7 +207,7 @@ select {
   letter-spacing: 0.04em;
 }
 .prose > * + * {
-  margin-top: 1.6em;
+  margin-top: 1.1em;
 }
 .prose h2 {
   font-size: 1.4em;

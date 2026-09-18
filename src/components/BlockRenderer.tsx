@@ -27,6 +27,19 @@ type Block = {
   children?: Block[];
 };
 
+/**
+ * BlockNote serialises a Shift+Enter hard break as a literal "\n" inside the
+ * text node (not a separate inline element), so it survives round-tripping
+ * through the editor. HTML collapses that newline to a space; split it back
+ * out into real <br /> elements here.
+ */
+function withBreaks(text: string, key: string): React.ReactNode {
+  if (!text.includes("\n")) return text;
+  return text
+    .split("\n")
+    .flatMap((part, i) => (i === 0 ? [part] : [<br key={`${key}-br-${i}`} />, part]));
+}
+
 function renderInline(nodes: InlineContent[] | string | undefined, keyPrefix = "i"): React.ReactNode {
   if (!nodes) return null;
   if (typeof nodes === "string") return nodes;
@@ -42,7 +55,7 @@ function renderInline(nodes: InlineContent[] | string | undefined, keyPrefix = "
     }
     const text = n.text ?? "";
     const s = n.styles ?? {};
-    let node: React.ReactNode = text;
+    let node: React.ReactNode = withBreaks(text, key);
     // Note: no italic branch. Japanese has no italics and browsers synthesise
     // an ugly oblique, so the editor's italic mark renders as weight instead.
     if (s.bold || s.italic) node = <strong key={key}>{node}</strong>;
