@@ -105,6 +105,48 @@ test("filters and searches the blog list instantly, with no navigation", async (
   await expect(cardTag).toHaveAttribute("href", /^\/tag\//);
 });
 
+/**
+ * BlockNote stores a Shift+Enter hard break as a literal "\n" inside the
+ * text node. BlockRenderer must turn that back into a real <br /> so a
+ * writer can put a line directly underneath another without the large
+ * between-paragraph gap a full Enter would produce (see
+ * src/components/BlockRenderer.tsx's withBreaks helper).
+ */
+test("a Shift+Enter line break renders inside the same paragraph, not as a new one", async ({
+  page,
+}) => {
+  const stamp = Date.now();
+  const marker = `改行テスト-${stamp}`;
+
+  await login(page);
+  await newPost(page);
+
+  await page.getByTestId("title-input").fill(marker);
+  await page.getByTestId("lead-input").fill("改行のテストです。");
+
+  const editable = page.locator(".bn-editor[contenteditable='true']").first();
+  await editable.click();
+  await page.keyboard.type("一行目");
+  await page.keyboard.press("Shift+Enter");
+  await page.keyboard.type("二行目");
+
+  await page.locator("button", { hasText: "いま保存" }).click();
+  await expect(page.getByTestId("save-state")).toContainText("保存しました", { timeout: 15_000 });
+  await page.locator("button", { hasText: "公開する" }).click();
+  await page.waitForURL("**/admin/posts");
+
+  await page.goto("/");
+  const searchInput = page.locator("#blog-search");
+  await searchInput.fill(marker);
+  await page.locator(".blog-card__link", { hasText: marker }).click();
+  await page.waitForURL(/\/p\//);
+
+  // Both lines sit inside one <p> — the hard break never split the paragraph.
+  const paragraph = page.locator(".prose p", { hasText: "一行目" });
+  await expect(paragraph).toContainText("二行目");
+  await expect(paragraph.locator("br")).toHaveCount(1);
+});
+
 test("composing Japanese text does not filter mid-conversion", async ({ page }) => {
   await page.goto("/");
   const searchInput = page.locator("#blog-search");

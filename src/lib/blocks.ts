@@ -52,7 +52,9 @@ export function headingsFromBlocks(json: string): Heading[] {
   const out: Heading[] = [];
   blocks.forEach((b, i) => {
     if (b.type !== "heading") return;
-    const text = inlineText(b.content).trim();
+    // Collapse any Shift+Enter hard breaks (stored as literal "\n") — a
+    // heading used as a TOC/anchor label reads as one line.
+    const text = inlineText(b.content).replace(/\s+/g, " ").trim();
     if (!text) return;
     // Matches BlockRenderer's own `?? 2` default, so an untagged level
     // always maps to the same rendered tag the TOC claims it links to.
@@ -79,6 +81,9 @@ export function excerptFromBlocks(json: string, maxLen = 140): string {
     .map((b) => inlineText(b.content))
     .filter(Boolean)
     .join(" ")
+    // Collapse any Shift+Enter hard breaks (stored as literal "\n") — an
+    // excerpt used for meta description / OG / RSS reads as one line.
+    .replace(/\s+/g, " ")
     .trim();
 
   return text.length > maxLen ? `${text.slice(0, maxLen)}…` : text;
